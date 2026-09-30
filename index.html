@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Web - PROSERING</title>
+    <link rel="stylesheet" href="Detalles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        body {
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .login-wrapper {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .login-image {
+            flex: 1;
+            background: linear-gradient(135deg, #193354 0%, #0449bfd9 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            padding: 40px;
+        }
+
+        .login-image::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.12) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 80%, rgba(4, 73, 191, 0.35) 0%, transparent 50%);
+            animation: float 15s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-2%, -2%); }
+        }
+
+        .login-image img {
+            max-width: 70%;
+            max-height: 60%;
+            object-fit: contain;
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 20px 50px rgba(0, 0, 0, 0.4));
+        }
+
+        .image-overlay {
+            position: absolute;
+            bottom: 50px;
+            left: 50px;
+            z-index: 2;
+            color: white;
+        }
+
+        .image-overlay h2 {
+            font-size: 2rem;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .image-overlay h2 span {
+            font-weight: 700;
+            color: #9fc1ff;
+        }
+
+        .image-overlay p {
+            color: #b8cdf0;
+            font-size: 1rem;
+            margin-top: 10px;
+            letter-spacing: 1.5px;
+        }
+
+        .login-form-side {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            background: #ffffff;
+            overflow-y: auto;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            background: transparent;
+            margin: 0 auto;
+        }
+
+        .login-header {
+            color: #193354;
+            padding: 0 0 24px 0;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 32px;
+        }
+
+        .login-header .logo-img {
+            max-height: 65px;
+            margin-bottom: 14px;
+        }
+
+        .login-header h1 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: #193354;
+        }
+
+        .login-header p {
+            opacity: 0.85;
+            font-size: 1rem;
+            color: #555;
+        }
+
+        .login-form {
+            padding: 0;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.92rem;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #0449bfd9;
+            font-size: 1rem;
+        }
+
+        .input-with-icon input {
+            width: 100%;
+            padding: 15px 15px 15px 48px;
+            border: 2px solid #e1e1e1;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+
+        .input-with-icon input:focus {
+            outline: none;
+            border-color: #0449bfd9;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(4, 73, 191, 0.1);
+        }
+
+        .input-with-icon input::placeholder {
+            color: #aaa;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #193354 0%, #0449bfd9 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.08rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+            position: relative;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(4, 73, 191, 0.35);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-links {
+            margin-top: 24px;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+        }
+
+        .login-links a {
+            color: #0449bfd9;
+            text-decoration: none;
+            font-size: 0.92rem;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+
+        .login-links a:hover {
+            color: #2575fc;
+            text-decoration: underline;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #0449bfd9;
+        }
+
+        .remember-me label {
+            color: #555;
+            font-size: 0.92rem;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .message {
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .message.error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+            display: block;
+        }
+
+        .message.success {
+            background: #e8f5e9;
+            color: #193354;
+            border-left: 4px solid #0449bfd9;
+            display: block;
+        }
+
+        .login-footer {
+            padding: 20px 0 0 0;
+            text-align: center;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 0.82rem;
+            margin-top: 32px;
+        }
+
+        .login-footer p {
+            margin: 4px 0;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #777;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .loader {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #registerPanel {
+            position: static !important;
+            top: auto !important;
+            display: none;
+        }
+
+        @media (max-width: 900px) {
+            .login-image { padding: 30px; }
+            .image-overlay h2 { font-size: 1.5rem; }
+            .image-overlay p { font-size: 0.9rem; }
+            .login-form-side { padding: 40px; }
+        }
+
+        @media (max-width: 768px) {
+            html, body { overflow: auto; }
+            .login-wrapper {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+            .login-image {
+                min-height: 280px;
+                flex: none;
+                padding: 30px 20px;
+            }
+            .login-image img { max-height: 130px; }
+            .image-overlay { bottom: 20px; left: 20px; }
+            .image-overlay h2 { font-size: 1.1rem; letter-spacing: 2px; }
+            .image-overlay p { font-size: 0.75rem; }
+            .login-form-side { padding: 35px 24px; min-height: auto; }
+            .login-header h1 { font-size: 1.5rem; }
+        }
+
+        @media (max-width: 480px) {
+            .login-form-side { padding: 28px 18px; }
+            .input-with-icon input { padding: 13px 13px 13px 42px; font-size: 0.95rem; }
+            .submit-btn { padding: 14px; font-size: 1rem; }
+            .login-header h1 { font-size: 1.35rem; }
+            .login-header .logo-img { max-height: 50px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-wrapper">
+
+        <!-- LADO IZQUIERDO: IMAGEN -->
+        <div class="login-image">
+            <img src="PROSERING.png" alt="Logo PROSERING" onerror="this.style.display='none'">
+            <div class="image-overlay">
+                <h2>PROSER<span>ING</span></h2>
+                <p>Sistema de Gestión SST</p>
+                <p>"La seguridad no es una prioridad, es nuestro principio fundamental."</p>
+            </div>
+        </div>
+
+        <!-- LADO DERECHO: FORMULARIOS -->
+        <div class="login-form-side">
+
+            <!-- CONTENEDOR LOGIN -->
+            <div class="login-container">
+                <div class="login-header">
+                    <div>
+                        <img src="Logo.png" alt="Logo" class="logo-img" onerror="this.style.display='none'">
+                    </div>
+                    <h1>Acceso Seguro</h1>
+                    <p>Ingresa tus credenciales para continuar</p>
+                </div>
+                
+                <div id="messageBox" class="message"></div>
+                
+                <div class="login-form">
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="username"><i class="fas fa-user"></i> Usuario o Email</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-envelope"></i>
+                                <input type="text" id="username" placeholder="ejemplo@email.com" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password"><i class="fas fa-lock"></i> Contraseña</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-key"></i>
+                                <input type="password" id="password" placeholder="••••••••" required>
+                                <button type="button" class="password-toggle" onclick="togglePassword()">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="remember-me">
+                            <input type="checkbox" id="remember">
+                            <label for="remember">Recordar mis datos</label>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn" id="submitBtn">
+                            <span id="btnText">Iniciar Sesión</span>
+                            <div class="loader" id="loader"></div>
+                        </button>
+                    </form>
+                    
+                    <div class="login-links">
+                        <a href="#" onclick="showRegister()">¿No tienes cuenta? Solicitalo</a>
+                    </div>
+                </div>
+                
+                <div class="login-footer">
+                    <p>© 2024 PROSERING App. Todos los derechos reservados.</p>
+                    <p><i class="fas fa-shield-alt"></i> Conexión segura SSL</p>
+                </div>
+            </div>
+
+            <!-- PANEL DE REGISTRO -->
+            <div class="login-container" id="registerPanel">
+                
+                <div class="login-header">
+                    <div>
+                        <i class="fas fa-user-plus"></i>
+                        <img src="Logo.png" alt="Logo" class="logo-img" onerror="this.style.display='none'">
+                    </div>
+                    <h1>Solicitar Cuenta</h1>
+                    <p>Completa el formulario para registrarte</p>
+                </div>
+                
+                <div class="login-form">
+                    <form id="registerForm">
+                        <div class="form-group">
+                            <label for="regNombres"><i class="fas fa-id-card"></i> Nombre Completo</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-user"></i>
+                                <input type="text" id="regNombres" placeholder="Nombre Completo" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="regEmail"><i class="fas fa-envelope"></i> Correo Electrónico</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-at"></i>
+                                <input type="email" id="regEmail" placeholder="tu@email.com" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="regCargo"><i class="fas fa-user-tag"></i> Cargo</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-user-circle"></i>
+                                <input type="text" id="regCargo" placeholder="Supervisor" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="regEmpresa"><i class="fas fa-user-tag"></i> Empresa</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-user-circle"></i>
+                                <input type="text" id="regEmpresa" placeholder="Nombre de Empresa" required>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">
+                            Solicitar Acceso
+                        </button>
+                    </form>
+                    
+                    <div class="login-links">
+                        <a href="#" onclick="showLogin()">← Volver al Login</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ============================================
+         ===== SUPABASE SDK =====
+         ============================================ -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0"></script>
+
+    <script>
+        // ============================================
+        // 🔁 CONFIGURACIÓN DE SUPABASE
+        // ============================================
+        const SUPABASE_URL = 'https://rvcepyqjmobrdjalvvst.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_U94_NuEFTcz0HvQFjLHRzA_OxV3k5HN';
+
+        // ============================================
+        // 🔑 CONFIGURACIÓN DE WEB3FORMS
+        // ============================================
+        const WEB3FORMS_ACCESS_KEY = 'cc45ce84-cd05-4422-b6ae-bdec71fd4a84';
+
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ========== VARIABLES GLOBALES ==========
+        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+
+        // ========== FUNCIONES PRINCIPALES ==========
+        
+        function showMessage(text, type = 'error') {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = text;
+            messageBox.className = `message ${type}`;
+            messageBox.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageBox.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.querySelector('.password-toggle i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.className = 'fas fa-eye-slash';
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.className = 'fas fa-eye';
+            }
+        }
+        
+        function showRegister() {
+            document.querySelector('.login-container').style.display = 'none';
+            document.getElementById('registerPanel').style.display = 'block';
+        }
+        
+        function showLogin() {
+            document.querySelector('.login-container').style.display = 'block';
+            document.getElementById('registerPanel').style.display = 'none';
+        }
+        
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+        
+        // ========== LOGIN CON SUPABASE ==========
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const usuario = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const remember = document.getElementById('remember').checked;
+            
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('btnText').style.display = 'none';
+            
+            try {
+                console.log('Intentando login con:', usuario);
+                
+                // Consulta: buscar SOLO por usuario (que ahora es el correo)
+                const { data, error } = await supabaseClient
+                    .from('login')
+                    .select('*')
+                    .eq('usuario', usuario)
+                    .eq('contrasena', password)
+                    .eq('estado', 'Activo')
+                    .maybeSingle();
+                
+                console.log('Respuesta de Supabase:', { data, error });
+                
+                if (error) {
+                    console.error('Error Supabase:', error);
+                    showMessage('Error: ' + error.message, 'error');
+                    document.getElementById('loader').style.display = 'none';
+                    document.getElementById('btnText').style.display = 'block';
+                    return;
+                }
+                
+                if (!data) {
+                    console.log('🔍 ===== DIAGNÓSTICO =====');
+                    console.log('Usuario ingresado:', JSON.stringify(usuario));
+                    console.log('Password ingresado:', JSON.stringify(password));
+                    
+                    // Buscar SOLO por usuario (sin filtrar por contraseña ni estado)
+                    const { data: usuarioExiste, error: errCheck } = await supabaseClient
+                        .from('login')
+                        .select('*')
+                        .eq('usuario', usuario)
+                        .maybeSingle();
+                    
+                    console.log('Usuario en BD:', usuarioExiste);
+                    console.log('Error:', errCheck);
+                    
+                    if (usuarioExiste) {
+                        console.log('Contraseña en BD:', JSON.stringify(usuarioExiste.contrasena));
+                        console.log('Estado en BD:', JSON.stringify(usuarioExiste.estado));
+                        console.log('¿Coincide contraseña?:', usuarioExiste.contrasena === password);
+                        console.log('¿Estado es Activo?:', usuarioExiste.estado === 'Activo');
+                    } else {
+                        console.log('El usuario NO existe en la BD con ese nombre');
+                    }
+                    
+                    if (usuarioExiste && usuarioExiste.estado !== 'Activo') {
+                        showMessage('Tu cuenta está en estado: ' + usuarioExiste.estado, 'error');
+                    } else {
+                        showMessage('Usuario o contraseña incorrectos', 'error');
+                    }
+                    
+                    document.getElementById('loader').style.display = 'none';
+                    document.getElementById('btnText').style.display = 'block';
+                    return;
+                }
+                
+                // Login exitoso
+                currentUser = {
+                    id: data.id,
+                    name: data.nombres,
+                    empresa: data.empresa,
+                    cargo: data.cargo,
+                    usuario: data.usuario,
+                    estado: data.estado
+                };
+                
+                if (remember) {
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                } else {
+                    sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+                }
+                
+                showMessage('¡Inicio de sesión exitoso! Redirigiendo...', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'principal/index.html';
+                }, 1200);
+                
+            } catch (err) {
+                console.error('Error:', err);
+                showMessage('Error de conexión. Intenta de nuevo.', 'error');
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('btnText').style.display = 'block';
+            }
+        });
+        
+        // ========== REGISTRO CON SUPABASE + WEB3FORMS ==========
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const nombres = document.getElementById('regNombres').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const cargo = document.getElementById('regCargo').value.trim();
+            const empresa = document.getElementById('regEmpresa').value.trim();
+            
+            if (!nombres || !email || !cargo || !empresa) {
+                showMessage('Todos los campos son obligatorios', 'error');
+                return;
+            }
+            
+            if (!validateEmail(email)) {
+                showMessage('Por favor ingresa un email válido', 'error');
+                return;
+            }
+            
+            const btn = e.target.querySelector('.submit-btn');
+            const textoOriginal = btn.textContent;
+            btn.textContent = 'Enviando...';
+            btn.disabled = true;
+            
+            try {
+                // 1️⃣ Verificar si el usuario/correo ya existe
+                const { data: existente } = await supabaseClient
+                    .from('login')
+                    .select('id')
+                    .eq('usuario', email)
+                    .maybeSingle();
+                
+                if (existente) {
+                    showMessage('Ese correo ya está registrado', 'error');
+                    btn.textContent = textoOriginal;
+                    btn.disabled = false;
+                    return;
+                }
+                
+                // 2️⃣ Insertar en Supabase usando el email como usuario
+                const { data, error } = await supabaseClient
+                    .from('login')
+                    .insert([{
+                        usuario: email,
+                        contrasena: '',
+                        nombres: nombres,
+                        empresa: empresa,
+                        cargo: cargo,
+                        estado: 'Pendiente',
+                        correo_notificado: false
+                    }])
+                    .select();
+                
+                console.log('Respuesta de Supabase:', { data, error });
+                
+                if (error) {
+                    console.error(' Error Supabase:', error);
+                    showMessage('Error: ' + error.message, 'error');
+                    btn.textContent = textoOriginal;
+                    btn.disabled = false;
+                    return;
+                }
+                
+                // 3️⃣ Enviar correo con Web3Forms
+                try {
+                    const respuestaEmail = await fetch('https://api.web3forms.com/submit', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            access_key: WEB3FORMS_ACCESS_KEY,
+                            subject: 'Nueva solicitud de cuenta - ' + nombres,
+                            from_name: 'SST PROSERING',
+                            Nombres: nombres,
+                            Usuario: email,
+                            Empresa: empresa,
+                            Cargo: cargo,
+                            Mensaje: 'Se ha recibido una nueva solicitud de acceso. Ingresa a Supabase para aprobarla.'
+                        })
+                    });
+                    
+                    const resultadoEmail = await respuestaEmail.json();
+                    console.log('Correo enviado:', resultadoEmail);
+                    
+                    // 4️⃣ Marcar correo_notificado = true
+                    if (resultadoEmail.success && data && data[0]) {
+                        await supabaseClient
+                            .from('login')
+                            .update({ correo_notificado: true })
+                            .eq('id', data[0].id);
+                        
+                        console.log(' correo_notificado marcado como true');
+                    }
+                    
+                } catch (errEmail) {
+                    console.error('¡Error al enviar correo:!', errEmail);
+                }
+                
+                btn.textContent = textoOriginal;
+                btn.disabled = false;
+                showMessage('Solicitud enviada. Espera la aprobación del administrador.', 'success');
+                document.getElementById('registerForm').reset();
+                setTimeout(() => showLogin(), 2500);
+                
+            } catch (err) {
+                console.error('Error:', err);
+                btn.textContent = textoOriginal;
+                btn.disabled = false;
+                showMessage('Error al enviar. Intenta de nuevo.', 'error');
+            }
+        });
+        
+        // ========== INICIALIZACIÓN ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            if (currentUser) {
+                document.getElementById('username').value = currentUser.usuario || '';
+                document.getElementById('remember').checked = true;
+                showMessage(`Bienvenido de nuevo, ${currentUser.name}`, 'success');
+            }
+        });
+        
+        // ========== FUNCIONES ADICIONALES ==========
+        function logout() {
+            localStorage.removeItem('currentUser');
+            sessionStorage.removeItem('currentUser');
+            currentUser = null;
+            alert('Sesión cerrada exitosamente');
+            window.location.reload();
+        }
+    </script>
+
+</body>
+</html>
