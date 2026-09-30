@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>Fotochecks · Licencias del Personal</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  * { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --azul-primario: #1e2b3c;
+    --azul-secundario: #2c3e50;
+    --azul-terciario: #3d5c7a;
+    --azul-acento: #3498db;
+    --gris-fondo: #f5f7fa;
+    --gris-borde: #e5eaf0;
+    --gris-texto: #5f6f80;
+    --blanco: #ffffff;
+    --verde: #27ae60;
+    --naranja: #e67e22;
+    --rojo: #e74c3c;
+    --sombra-suave: 0 2px 8px rgba(30, 43, 60, 0.04);
+    --sombra-media: 0 8px 24px rgba(30, 43, 60, 0.08);
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--gris-fondo);
+    color: var(--azul-primario);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body { padding: 20px; }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* ===== HEADER ===== */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .page-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .page-title .icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.3rem;
+    box-shadow: 0 6px 16px rgba(52, 152, 219, 0.3);
+    flex-shrink: 0;
+  }
+
+  .page-title h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--azul-primario);
+    margin: 0;
+    letter-spacing: -0.4px;
+  }
+
+  .page-title .subtitle {
+    font-size: 0.85rem;
+    color: var(--gris-texto);
+    margin-top: 2px;
+  }
+
+  /* ===== TOOLBAR ===== */
+  .toolbar {
+    background: var(--blanco);
+    border-radius: 16px;
+    padding: 16px 20px;
+    border: 1px solid var(--gris-borde);
+    box-shadow: var(--sombra-suave);
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+
+  .search-wrapper {
+    flex: 1;
+    min-width: 220px;
+    position: relative;
+  }
+
+  .search-wrapper i {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gris-texto);
+    font-size: 0.9rem;
+    pointer-events: none;
+  }
+
+  .search-wrapper input {
+    width: 100%;
+    padding: 12px 16px 12px 44px;
+    border: 1.5px solid var(--gris-borde);
+    border-radius: 12px;
+    font-size: 0.92rem;
+    font-family: inherit;
+    transition: all 0.2s;
+    background: var(--gris-fondo);
+    color: var(--azul-primario);
+  }
+
+  .search-wrapper input:focus {
+    outline: none;
+    border-color: var(--azul-acento);
+    background: var(--blanco);
+    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+  }
+
+  .contador-sel {
+    background: var(--gris-fondo);
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--gris-texto);
+    white-space: nowrap;
+    border: 1.5px solid var(--gris-borde);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.25s;
+  }
+
+  .contador-sel i {
+    font-size: 0.85rem;
+    opacity: 0.7;
+  }
+
+  .contador-sel.activo {
+    background: linear-gradient(135deg, #1e2b3c 0%, #2c3e50 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(30, 43, 60, 0.25);
+  }
+
+  .contador-sel.activo i {
+    opacity: 1;
+    color: #3498db;
+  }
+
+  /* ===== ACCIONES ===== */
+  .acciones {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .btn {
+    border: none;
+    padding: 11px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .btn-outline {
+    background: var(--blanco);
+    color: var(--azul-primario);
+    border: 1.5px solid var(--gris-borde);
+  }
+  .btn-outline:hover:not(:disabled) {
+    background: #f0f5fa;
+    border-color: var(--azul-acento);
+    color: var(--azul-acento);
+    transform: translateY(-1px);
+  }
+
+  .btn-success {
+    background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.25);
+  }
+  .btn-success:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(39, 174, 96, 0.4);
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.25);
+  }
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(52, 152, 219, 0.4);
+  }
+
+  .btn-cancel {
+    background: var(--gris-fondo);
+    color: var(--gris-texto);
+    border: 1.5px solid var(--gris-borde);
+  }
+  .btn-cancel:hover:not(:disabled) {
+    background: #e9eef4;
+    border-color: #cbd5e1;
+  }
+
+  /* ===== TABLA ===== */
+  .tabla-card {
+    background: var(--blanco);
+    border-radius: 16px;
+    border: 1px solid var(--gris-borde);
+    box-shadow: var(--sombra-suave);
+    overflow: hidden;
+  }
+
+  .tabla-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
+  }
+
+  th {
+    background: #f9fbfd;
+    color: var(--gris-texto);
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 14px 18px;
+    text-align: left;
+    border-bottom: 1px solid var(--gris-borde);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #f0f3f7;
+    font-size: 0.88rem;
+    color: var(--azul-primario);
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  tbody tr:hover {
+    background: #f9fbfd;
+  }
+
+  tbody tr.selected {
+    background: rgba(39, 174, 96, 0.06);
+  }
+
+  tbody tr.selected:hover {
+    background: rgba(39, 174, 96, 0.1);
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .check-cell {
+    width: 50px;
+    text-align: center;
+  }
+
+  .check-cell input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #27ae60;
+    border-radius: 4px;
+  }
+
+  /* Avatar */
+  .cell-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .mini-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3d5c7a 0%, #2c3e50 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .cell-name .name-text {
+    font-weight: 600;
+    color: var(--azul-primario);
+  }
+
+  /* Badges */
+  .badge-fecha {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+
+  .badge-vigente {
+    background: rgba(39, 174, 96, 0.12);
+    color: #1e8449;
+  }
+
+  .badge-por-vencer {
+    background: rgba(230, 126, 34, 0.12);
+    color: #b9770e;
+  }
+
+  .badge-vencido {
+    background: rgba(231, 76, 60, 0.12);
+    color: #c0392b;
+  }
+
+  .badge-sin {
+    background: rgba(150, 150, 150, 0.15);
+    color: #666;
+  }
+
+  .badge-fecha i {
+    font-size: 0.65rem;
+  }
+
+  /* No data / Loading */
+  .no-data {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--gris-texto);
+    font-size: 0.9rem;
+  }
+
+  .no-data i {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 12px;
+    opacity: 0.4;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--gris-texto);
+    font-size: 0.9rem;
+  }
+
+  .loading i {
+    font-size: 1.5rem;
+    display: block;
+    margin-bottom: 12px;
+    color: var(--azul-acento);
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 25, 35, 0.55);
+    backdrop-filter: blur(4px);
+    z-index: 1500;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: white;
+    border-radius: 20px;
+    max-width: 520px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 60px rgba(15, 25, 35, 0.3);
+    animation: fadeInUp 0.3s ease;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .modal-header {
+    background: linear-gradient(135deg, #1a2634 0%, #2c3e50 100%);
+    color: white;
+    padding: 20px 24px;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .modal-header-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .modal-header-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(52, 152, 219, 0.2);
+    color: #3498db;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: white;
+  }
+
+  .close-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    line-height: 1;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .close-btn:hover {
+    background: rgba(255, 100, 100, 0.25);
+    transform: rotate(90deg);
+  }
+
+  .modal-body {
+    padding: 24px;
+  }
+
+  .modal-info {
+    background: var(--gris-fondo);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 0.85rem;
+    color: var(--gris-texto);
+    margin-bottom: 20px;
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .modal-info-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3d5c7a 0%, #2c3e50 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .modal-info-text strong {
+    color: var(--azul-primario);
+    font-size: 0.92rem;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  /* Form */
+  .form-group { margin-bottom: 18px; }
+
+  .form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--gris-texto);
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .form-group label i {
+    color: var(--azul-acento);
+    font-size: 0.85rem;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--gris-borde);
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    background: var(--gris-fondo);
+    color: var(--azul-primario);
+    transition: all 0.2s;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--azul-acento);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+  }
+
+  .form-hint {
+    font-size: 0.72rem;
+    color: var(--gris-texto);
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .form-hint i {
+    color: var(--azul-acento);
+    font-size: 0.7rem;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--gris-borde);
+  }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(120px);
+    background: var(--azul-secundario);
+    color: #fff;
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    box-shadow: 0 12px 32px rgba(30, 43, 60, 0.35);
+    opacity: 0;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2000;
+    max-width: calc(100% - 40px);
+    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .toast.success { background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%); }
+  .toast.error   { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
+  .toast.info    { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); }
+
+  /* ===== OVERLAY ===== */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 25, 35, 0.65);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1800;
+    color: white;
+    flex-direction: column;
+    gap: 18px;
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  .overlay.activo { display: flex; }
+
+  .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    border-top-color: #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 900px) {
+    .container { padding: 0; }
+    table { min-width: 640px; }
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 12px; }
+    .page-title h1 { font-size: 1.2rem; }
+    .page-title .icon-box { width: 42px; height: 42px; font-size: 1.1rem; }
+
+    .toolbar { flex-direction: column; align-items: stretch; padding: 14px; gap: 10px; }
+    .search-wrapper { width: 100%; }
+    .contador-sel { justify-content: center; }
+
+    .acciones { flex-direction: column; }
+    .acciones .btn { width: 100%; }
+
+    /* Ocultar columnas en móvil */
+    table th:nth-child(4),
+    table td:nth-child(4),
+    table th:nth-child(5),
+    table td:nth-child(5),
+    table th:nth-child(6),
+    table td:nth-child(6) { display: none; }
+
+    table { min-width: 0; }
+    th, td { padding: 12px 14px; font-size: 0.82rem; white-space: normal; }
+
+    /* Modal fullscreen */
+    .modal-overlay { padding: 0; align-items: stretch; }
+    .modal {
+      border-radius: 0;
+      max-height: 100vh;
+      height: 100vh;
+      max-width: 100vw;
+    }
+    .modal-header { border-radius: 0; padding: 18px; }
+    .modal-body { padding: 20px; }
+
+    .modal-actions { flex-direction: column-reverse; }
+    .modal-actions .btn { width: 100%; }
+  }
+
+  @media (max-width: 380px) {
+    .page-title h1 { font-size: 1rem; }
+    th, td { font-size: 0.75rem; padding: 10px 8px; }
+    .badge-fecha { font-size: 0.65rem; padding: 4px 9px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="icon-box">
+        <i class="fas fa-id-card"></i>
+      </div>
+      <div>
+        <h1>Generador de Fotochecks</h1>
+        <div class="subtitle">Emisión y gestión de credenciales de personal</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="search-wrapper">
+      <i class="fas fa-search"></i>
+      <input type="text" id="searchInput" placeholder="Buscar por DNI o nombre...">
+    </div>
+    <div class="contador-sel" id="contadorSel">
+      <i class="fas fa-check-circle"></i>
+      <span><span id="contadorNum">0</span> seleccionados</span>
+    </div>
+  </div>
+
+  <!-- ACCIONES -->
+  <div class="acciones">
+    <button class="btn btn-outline" id="btnTodos">
+      <i class="fas fa-check-double"></i> Seleccionar todos
+    </button>
+    <button class="btn btn-outline" id="btnNinguno">
+      <i class="fas fa-times-circle"></i> Quitar selección
+    </button>
+    <button class="btn btn-success" id="btnGenerar" disabled>
+      <i class="fas fa-file-pdf"></i> Generar PDF con fotochecks
+    </button>
+  </div>
+
+  <!-- TABLA -->
+  <div class="tabla-card">
+    <div id="tableContainer" class="tabla-wrap">
+      <div class="loading">
+        <i class="fas fa-circle-notch"></i>
+        Cargando datos...
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL EDITAR -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-header-content">
+        <div class="modal-header-icon">
+          <i class="fas fa-pen"></i>
+        </div>
+        <h3>Editar datos</h3>
+      </div>
+      <button class="close-btn" id="closeModal" title="Cerrar">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-info" id="modalInfo"></div>
+
+      <div class="form-group">
+        <label for="editManejo">
+          <i class="fas fa-calendar-alt"></i> Fecha de vencimiento · Manejo
+        </label>
+        <input type="date" id="editManejo">
+        <div class="form-hint">
+          <i class="fas fa-info-circle"></i>
+          Selecciona la fecha de vencimiento de la licencia de manejo
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="editUnidades">
+          <i class="fas fa-truck"></i> Unidades
+        </label>
+        <input type="text" id="editUnidades" placeholder="Ej: Camioneta, Cargador">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-cancel" id="btnCancelModal">
+          <i class="fas fa-times"></i> Cancelar
+        </button>
+        <button class="btn btn-primary" id="btnSaveModal">
+          <i class="fas fa-save"></i> Guardar cambios
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="overlay" id="overlay">
+  <div class="spinner"></div>
+  <div id="overlayTexto">Generando PDF...</div>
+</div>
+
+<script>
+  // ============================================
+  // CONFIGURACIÓN SUPABASE
+  // ============================================
+  const SUPABASE_URL = 'https://rvcepyqjmobrdjalvvst.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_U94_NuEFTcz0HvQFjLHRzA_OxV3k5HN';
+  const TABLA = 'habilitaciones';
+
+  // ============================================
+  // 🔗 URL BASE PARA EL QR (CÁMBIALA POR LA TUYA)
+  // ============================================
+  const URL_BASE_QR = 'https://www.youtube.com/';
+
+  const { createClient } = supabase;
+  const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ============================================
+  // ESTADO GLOBAL
+  // ============================================
+  let personas = [];
+  let seleccionados = new Set();
+  let personaEditando = null;
+
+  const searchInput = document.getElementById('searchInput');
+  const tableContainer = document.getElementById('tableContainer');
+  const contadorNum = document.getElementById('contadorNum');
+  const contadorSel = document.getElementById('contadorSel');
+  const btnTodos = document.getElementById('btnTodos');
+  const btnNinguno = document.getElementById('btnNinguno');
+  const btnGenerar = document.getElementById('btnGenerar');
+  const toast = document.getElementById('toast');
+  const overlay = document.getElementById('overlay');
+  const overlayTexto = document.getElementById('overlayTexto');
+
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modalInfo = document.getElementById('modalInfo');
+  const editManejo = document.getElementById('editManejo');
+  const editUnidades = document.getElementById('editUnidades');
+  const closeModal = document.getElementById('closeModal');
+  const btnCancelModal = document.getElementById('btnCancelModal');
+  const btnSaveModal = document.getElementById('btnSaveModal');
+
+  // ============================================
+  // UTILIDADES
+  // ============================================
+  let toastTimer = null;
+  function mostrarToast(msg, tipo = 'success') {
+    const iconos = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+    const icono = iconos[tipo] || 'fa-info-circle';
+    toast.innerHTML = `<i class="fas ${icono}"></i> ${msg}`;
+    toast.className = 'toast show ' + tipo;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  function mostrarOverlay(texto) {
+    overlayTexto.textContent = texto;
+    overlay.classList.add('activo');
+  }
+
+  function ocultarOverlay() {
+    overlay.classList.remove('activo');
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text ?? '';
+    return div.innerHTML;
+  }
+
+  function escapeAttr(text) {
+    return String(text ?? '').replace(/"/g, '&quot;');
+  }
+
+  function iniciales(nombre) {
+    if (!nombre) return '—';
+    const p = nombre.trim().split(/\s+/);
+    if (p.length === 1) return p[0].substring(0, 2).toUpperCase();
+    return (p[0].charAt(0) + p[1].charAt(0)).toUpperCase();
+  }
+
+  // ============================================
+  // FECHAS
+  // ============================================
+  function parsearFecha(valor) {
+    if (!valor) return null;
+    const s = String(valor).trim();
+    if (!s || s === 'null') return null;
+    if (!/^\d{4}-\d{2}-\d{2}/.test(s)) return null;
+    const f = new Date(s);
+    return isNaN(f.getTime()) ? null : f;
+  }
+
+  function obtenerBadgeManejo(valor) {
+    if (!valor || String(valor).trim() === '') {
+      return { clase: 'badge-sin', texto: 'Sin registro', icono: 'fa-minus-circle' };
+    }
+
+    const fecha = parsearFecha(valor);
+    if (!fecha) {
+      return { clase: 'badge-sin', texto: String(valor).trim(), icono: 'fa-minus-circle' };
+    }
+
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const f = new Date(fecha); f.setHours(0, 0, 0, 0);
+    const diffDias = Math.round((f - hoy) / (1000 * 60 * 60 * 24));
+    const fechaTxt = f.toLocaleDateString('es-PE');
+
+    if (diffDias < 0) {
+      return { clase: 'badge-vencido', texto: `Vencido (${fechaTxt})`, icono: 'fa-exclamation-circle' };
+    }
+    if (diffDias <= 30) {
+      return { clase: 'badge-por-vencer', texto: `Por vencer (${fechaTxt})`, icono: 'fa-clock' };
+    }
+    return { clase: 'badge-vigente', texto: `Vigente (${fechaTxt})`, icono: 'fa-check-circle' };
+  }
+
+  function convertirAFechaISO(valor) {
+    if (!valor) return '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(valor)) return valor;
+    const f = new Date(valor);
+    if (isNaN(f.getTime())) return '';
+    const yyyy = f.getFullYear();
+    const mm = String(f.getMonth() + 1).padStart(2, '0');
+    const dd = String(f.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  // ============================================
+  // CARGAR DATOS
+  // ============================================
+  async function cargarDatos() {
+    try {
+      const { data, error } = await supabaseClient
+        .from(TABLA)
+        .select('*')
+        .order('nombres_apellidos', { ascending: true });
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        tableContainer.innerHTML = `
+          <div class="no-data">
+            <i class="fas fa-inbox"></i>
+            No hay registros en la tabla
+          </div>`;
+        return;
+      }
+
+      personas = data.map(fila => ({
+        id: fila.id,
+        dni: String(fila.dni ?? '').trim(),
+        nombreCompleto: String(fila.nombres_apellidos ?? '').trim(),
+        cargo: String(fila.cargo ?? '').trim(),
+        empresa: String(fila.empresa ?? '').trim(),
+        manejo: fila.manejo || null,
+        unidades: String(fila.unidades ?? '').trim()
+      })).filter(p => p.dni && p.nombreCompleto);
+
+      if (personas.length === 0) {
+        tableContainer.innerHTML = `
+          <div class="no-data">
+            <i class="fas fa-inbox"></i>
+            No hay registros con DNI y nombre válido
+          </div>`;
+        return;
+      }
+
+      renderTabla(personas);
+    } catch (err) {
+      console.error(err);
+      tableContainer.innerHTML = `
+        <div class="no-data">
+          <i class="fas fa-exclamation-circle" style="color:#e74c3c;"></i>
+          Error al cargar los datos<br>
+          <span style="font-size:0.8rem;">${err.message}</span>
+        </div>`;
+    }
+  }
+
+  // ============================================
+  // RENDER TABLA
+  // ============================================
+  function renderTabla(lista) {
+    if (lista.length === 0) {
+      tableContainer.innerHTML = `
+        <div class="no-data">
+          <i class="fas fa-search"></i>
+          No se encontraron resultados
+        </div>`;
+      return;
+    }
+
+    let html = `
+      <table>
+        <thead>
+          <tr>
+            <th class="check-cell"></th>
+            <th>DNI</th>
+            <th>Nombres y Apellidos</th>
+            <th>Empresa</th>
+            <th>Manejo</th>
+            <th>Unidades</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    lista.forEach(p => {
+      const isSelected = seleccionados.has(p.id);
+      const badge = obtenerBadgeManejo(p.manejo);
+
+      html += `
+        <tr data-id="${escapeAttr(p.id)}" class="${isSelected ? 'selected' : ''}">
+          <td class="check-cell">
+            <input type="checkbox" ${isSelected ? 'checked' : ''} data-id="${escapeAttr(p.id)}">
+          </td>
+          <td>${escapeHtml(p.dni)}</td>
+          <td>
+            <div class="cell-name">
+              <div class="mini-avatar">${iniciales(p.nombreCompleto)}</div>
+              <span class="name-text">${escapeHtml(p.nombreCompleto)}</span>
+            </div>
+          </td>
+          <td>${escapeHtml(p.empresa || '—')}</td>
+          <td>
+            <span class="badge-fecha ${badge.clase}">
+              <i class="fas ${badge.icono}"></i> ${escapeHtml(badge.texto)}
+            </span>
+          </td>
+          <td>${escapeHtml(p.unidades || '—')}</td>
+        </tr>`;
+    });
+
+    html += '</tbody></table>';
+    tableContainer.innerHTML = html;
+
+    tableContainer.querySelectorAll('tbody tr').forEach(tr => {
+      const id = tr.getAttribute('data-id');
+      const checkbox = tr.querySelector('input[type="checkbox"]');
+
+      tr.addEventListener('click', (e) => {
+        if (e.target === checkbox) return;
+        abrirModalEdicion(Number(id));
+      });
+
+      checkbox.addEventListener('change', (e) => {
+        e.stopPropagation();
+        toggleSeleccion(id, checkbox.checked);
+      });
+    });
+  }
+
+  function toggleSeleccion(id, marcado) {
+    id = Number(id);
+    if (marcado) seleccionados.add(id);
+    else seleccionados.delete(id);
+    actualizarContador();
+    const tr = tableContainer.querySelector(`tr[data-id="${id}"]`);
+    if (tr) {
+      if (marcado) tr.classList.add('selected');
+      else tr.classList.remove('selected');
+    }
+  }
+
+  function actualizarContador() {
+    contadorNum.textContent = seleccionados.size;
+    if (seleccionados.size > 0) {
+      contadorSel.classList.add('activo');
+      btnGenerar.disabled = false;
+    } else {
+      contadorSel.classList.remove('activo');
+      btnGenerar.disabled = true;
+    }
+  }
+
+  // ============================================
+  // BUSCADOR
+  // ============================================
+  searchInput.addEventListener('input', () => {
+    const termino = searchInput.value.trim().toLowerCase();
+    if (!termino) { renderTabla(personas); return; }
+
+    const filtrados = personas.filter(p =>
+      p.dni.toLowerCase().includes(termino) ||
+      p.nombreCompleto.toLowerCase().includes(termino)
+    );
+    renderTabla(filtrados);
+  });
+
+  // ============================================
+  // BOTONES SELECCIÓN
+  // ============================================
+  btnTodos.addEventListener('click', () => {
+    personas.forEach(p => seleccionados.add(p.id));
+    renderTabla(personas);
+    actualizarContador();
+    mostrarToast(`${seleccionados.size} seleccionados`, 'info');
+  });
+
+  btnNinguno.addEventListener('click', () => {
+    seleccionados.clear();
+    renderTabla(personas);
+    actualizarContador();
+  });
+
+  // ============================================
+  // MODAL EDITAR
+  // ============================================
+  function abrirModalEdicion(id) {
+    personaEditando = personas.find(p => p.id === id);
+    if (!personaEditando) return;
+
+    modalInfo.innerHTML = `
+      <div class="modal-info-avatar">${iniciales(personaEditando.nombreCompleto)}</div>
+      <div class="modal-info-text">
+        <strong>${escapeHtml(personaEditando.nombreCompleto)}</strong>
+        DNI: ${escapeHtml(personaEditando.dni)} · ${escapeHtml(personaEditando.cargo || '—')}
+      </div>
+    `;
+
+    editManejo.value = convertirAFechaISO(personaEditando.manejo);
+    editUnidades.value = personaEditando.unidades || '';
+
+    modalOverlay.classList.add('active');
+    setTimeout(() => editManejo.focus(), 200);
+  }
+
+  function cerrarModalEdicion() {
+    modalOverlay.classList.remove('active');
+    personaEditando = null;
+  }
+
+  closeModal.addEventListener('click', cerrarModalEdicion);
+  btnCancelModal.addEventListener('click', cerrarModalEdicion);
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) cerrarModalEdicion();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modalOverlay.classList.contains('active')) cerrarModalEdicion();
+  });
+
+  btnSaveModal.addEventListener('click', async () => {
+    if (!personaEditando) return;
+
+    const nuevoManejo = editManejo.value.trim();
+    const nuevoUnidades = editUnidades.value.trim();
+
+    const manejoAnterior = convertirAFechaISO(personaEditando.manejo);
+
+    if (nuevoManejo === manejoAnterior && nuevoUnidades === personaEditando.unidades) {
+      mostrarToast('No hubo cambios', 'info');
+      cerrarModalEdicion();
+      return;
+    }
+
+    btnSaveModal.disabled = true;
+    btnSaveModal.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Guardando...';
+
+    try {
+      const { error } = await supabaseClient
+        .from(TABLA)
+        .update({
+          manejo: nuevoManejo || null,
+          unidades: nuevoUnidades
+        })
+        .eq('id', personaEditando.id);
+
+      if (error) throw error;
+
+      personaEditando.manejo = nuevoManejo || null;
+      personaEditando.unidades = nuevoUnidades;
+
+      const idx = personas.findIndex(p => p.id === personaEditando.id);
+      if (idx >= 0) {
+        personas[idx].manejo = nuevoManejo || null;
+        personas[idx].unidades = nuevoUnidades;
+      }
+
+      mostrarToast('Datos actualizados correctamente', 'success');
+      cerrarModalEdicion();
+      renderTabla(personas);
+    } catch (err) {
+      console.error(err);
+      mostrarToast('Error: ' + err.message, 'error');
+    } finally {
+      btnSaveModal.disabled = false;
+      btnSaveModal.innerHTML = '<i class="fas fa-save"></i> Guardar cambios';
+    }
+  });
+
+  // ============================================
+  // GENERAR PDF
+  // ============================================
+  btnGenerar.addEventListener('click', async () => {
+    if (seleccionados.size === 0) {
+      mostrarToast('Seleccione al menos una persona', 'error');
+      return;
+    }
+
+    mostrarOverlay('Generando fotochecks...');
+    await new Promise(r => setTimeout(r, 100));
+
+    try {
+      const arr = personas.filter(p => seleccionados.has(p.id));
+      await generarPDFFotochecks(arr);
+    } catch (err) {
+      console.error(err);
+      mostrarToast('Error: ' + err.message, 'error');
+    } finally {
+      ocultarOverlay();
+    }
+  });
+
+  async function generarPDFFotochecks(lista) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    const A4_W = 210;
+    const A4_H = 297;
+    const CARD_W = 85.6;
+    const CARD_H = 54;
+    const GAP_H = 0;
+    const FILAS_POR_HOJA = 4;
+
+    const MARGEN_H = (A4_W - (CARD_W * 2 + GAP_H)) / 2;
+    const MARGEN_V = (A4_H - (CARD_H * FILAS_POR_HOJA)) / (FILAS_POR_HOJA + 1);
+
+    const COLOR_PRIMARIO = [30, 43, 60];
+    const COLOR_SECUNDARIO = [29, 78, 111];
+    const COLOR_ACENTO = [52, 152, 219];
+    const COLOR_TEXTO = [40, 40, 40];
+    const COLOR_GRIS = [120, 120, 120];
+
+    let personaIndex = 0;
+    for (const persona of lista) {
+      const fila = personaIndex % FILAS_POR_HOJA;
+
+      if (personaIndex > 0 && fila === 0) {
+        doc.addPage();
+      }
+
+      const y = MARGEN_V + fila * (CARD_H + MARGEN_V);
+
+      const xCara = MARGEN_H;
+      dibujarCara(doc, xCara, y, CARD_W, CARD_H, persona, {
+        COLOR_PRIMARIO, COLOR_SECUNDARIO, COLOR_ACENTO, COLOR_TEXTO, COLOR_GRIS
+      });
+
+      const xReverso = MARGEN_H + CARD_W + GAP_H;
+      const urlQR = `${URL_BASE_QR}?dni=${encodeURIComponent(persona.dni)}`;
+      const qrDataUrl = await generarQR(urlQR);
+
+      dibujarReverso(doc, xReverso, y, CARD_W, CARD_H, persona, qrDataUrl, {
+        COLOR_PRIMARIO, COLOR_SECUNDARIO, COLOR_ACENTO, COLOR_TEXTO, COLOR_GRIS
+      });
+
+      personaIndex++;
+    }
+
+    doc.save(`Fotochecks_${lista.length}_${Date.now()}.pdf`);
+    mostrarToast(`PDF generado con ${lista.length} fotochecks`, 'success');
+  }
+
+  function generarQR(texto) {
+    return new Promise((resolve) => {
+      try {
+        const contenedor = document.createElement('div');
+        contenedor.style.position = 'absolute';
+        contenedor.style.left = '-9999px';
+        document.body.appendChild(contenedor);
+
+        new QRCode(contenedor, {
+          text: texto,
+          width: 300,
+          height: 300,
+          colorDark: '#1e2b3c',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.H
+        });
+
+        setTimeout(() => {
+          const canvas = contenedor.querySelector('canvas');
+          const img = contenedor.querySelector('img');
+
+          let dataUrl = null;
+          if (canvas) {
+            dataUrl = canvas.toDataURL('image/png');
+          } else if (img) {
+            dataUrl = img.src;
+          }
+
+          document.body.removeChild(contenedor);
+          resolve(dataUrl);
+        }, 100);
+
+      } catch (err) {
+        console.error('Error generando QR:', err);
+        resolve(null);
+      }
+    });
+  }
+
+  // ============================================
+  // DIBUJAR CARA
+  // ============================================
+  function dibujarCara(doc, x, y, w, h, persona, col) {
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(x, y, w, h, 2, 2, 'F');
+    doc.setDrawColor(220, 225, 230);
+    doc.setLineWidth(0.2);
+    doc.roundedRect(x, y, w, h, 2, 2, 'S');
+
+    doc.setFillColor(...col.COLOR_PRIMARIO);
+    doc.roundedRect(x, y, w, 10, 2, 2, 'F');
+    doc.rect(x, y + 8, w, 2, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('PROSERING', x + 2.5, y + 5);
+    doc.setFontSize(5);
+    doc.setFont('helvetica', 'normal');
+    doc.text('SEGURIDAD Y SALUD EN EL TRABAJO', x + 2.5, y + 8);
+
+    const fotoX = x + 3, fotoY = y + 13, fotoW = 22, fotoH = 26;
+    doc.setFillColor(240, 245, 250);
+    doc.roundedRect(fotoX, fotoY, fotoW, fotoH, 1.5, 1.5, 'F');
+    doc.setDrawColor(...col.COLOR_ACENTO);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(fotoX, fotoY, fotoW, fotoH, 1.5, 1.5, 'S');
+
+    const partes = persona.nombreCompleto.split(' ');
+    const inicialesTxt = ((partes[0]?.charAt(0) || '') + (partes[1]?.charAt(0) || '')).toUpperCase();
+    doc.setTextColor(...col.COLOR_ACENTO);
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.text(inicialesTxt || 'NN', fotoX + fotoW / 2, fotoY + fotoH / 2 + 3, { align: 'center' });
+
+    const infoX = fotoX + fotoW + 3;
+    const infoY = fotoY + 2;
+    const infoW = w - (infoX - x) - 3;
+
+    doc.setTextColor(...col.COLOR_TEXTO);
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'bold');
+    const lineasNombre = doc.splitTextToSize(persona.nombreCompleto.toUpperCase(), infoW);
+    doc.text(lineasNombre.slice(0, 2), infoX, infoY + 2);
+
+    const yDNI = infoY + (lineasNombre.length > 1 ? 10 : 6);
+    doc.setFontSize(6);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...col.COLOR_GRIS);
+    doc.text('DNI:', infoX, yDNI);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...col.COLOR_TEXTO);
+    doc.setFontSize(7);
+    doc.text(persona.dni, infoX + 6, yDNI);
+
+    const yCargo = yDNI + 4;
+    doc.setFontSize(6);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...col.COLOR_GRIS);
+    doc.text('CARGO:', infoX, yCargo);
+    doc.setFontSize(6);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...col.COLOR_TEXTO);
+    const lineasCargo = doc.splitTextToSize(persona.cargo || '—', infoW - 12);
+    doc.text(lineasCargo.slice(0, 1), infoX + 12, yCargo);
+
+    const yEmpresa = yCargo + 4;
+    doc.setFontSize(6);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...col.COLOR_GRIS);
+    doc.text('EMPRESA:', infoX, yEmpresa);
+    doc.setFontSize(6);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...col.COLOR_TEXTO);
+    const lineasEmpresa = doc.splitTextToSize(persona.empresa || '—', infoW - 15);
+    doc.text(lineasEmpresa.slice(0, 1), infoX + 15, yEmpresa);
+
+    const yFranja = y + h - 12;
+
+    doc.setFillColor(230, 126, 34);
+    doc.roundedRect(x + 3, yFranja, 38, 8, 1.5, 1.5, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(5.5);
+    doc.setFont('helvetica', 'normal');
+    doc.text('LICENCIA DE MANEJO', x + 3 + 19, yFranja + 3, { align: 'center' });
+    doc.setFontSize(6);
+    doc.setFont('helvetica', 'bold');
+    const manejoTxt = convertirAFechaISO(persona.manejo) || '—';
+    doc.text(manejoTxt, x + 3 + 19, yFranja + 6.5, { align: 'center' });
+
+    doc.setFillColor(...col.COLOR_SECUNDARIO);
+    doc.roundedRect(x + 43, yFranja, w - 46, 8, 1.5, 1.5, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(5.5);
+    doc.setFont('helvetica', 'normal');
+    doc.text('UNIDADES', x + 43 + (w - 46) / 2, yFranja + 3, { align: 'center' });
+    doc.setFontSize(6);
+    doc.setFont('helvetica', 'bold');
+    const lineasUnidades = doc.splitTextToSize(persona.unidades || '—', w - 50);
+    doc.text(lineasUnidades.slice(0, 1), x + 43 + (w - 46) / 2, yFranja + 6.5, { align: 'center' });
+  }
+
+  // ============================================
+  // DIBUJAR REVERSO
+  // ============================================
+  function dibujarReverso(doc, x, y, w, h, persona, qrDataUrl, col) {
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(x, y, w, h, 2, 2, 'F');
+    doc.setDrawColor(220, 225, 230);
+    doc.setLineWidth(0.2);
+    doc.roundedRect(x, y, w, h, 2, 2, 'S');
+
+    doc.setFillColor(...col.COLOR_PRIMARIO);
+    doc.roundedRect(x, y, w, 7, 2, 2, 'F');
+    doc.rect(x, y + 5, w, 2, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(6);
+    doc.setFont('helvetica', 'bold');
+    doc.text('VERIFICACIÓN DIGITAL', x + w / 2, y + 5, { align: 'center' });
+
+    if (qrDataUrl) {
+      const qrSize = 28;
+      const qrX = x + 5;
+      const qrY = y + 11;
+      try {
+        doc.addImage(qrDataUrl, 'PNG', qrX, qrY, qrSize, qrSize);
+      } catch (err) { console.warn('Error al añadir QR:', err); }
+
+      doc.setDrawColor(...col.COLOR_ACENTO);
+      doc.setLineWidth(0.3);
+      doc.rect(qrX - 1, qrY - 1, qrSize + 2, qrSize + 2);
+    }
+
+    const textoX = x + 38;
+    const textoY = y + 15;
+
+    doc.setTextColor(...col.COLOR_TEXTO);
+    doc.setFontSize(6);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ESCANEA EL CÓDIGO', textoX, textoY);
+
+    doc.setFontSize(5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...col.COLOR_GRIS);
+
+    const lineas = [
+      'Verifica la autenticidad',
+      'de esta credencial y',
+      'consulta los datos en',
+      'tiempo real.'
+    ];
+    let ty = textoY + 4.5;
+    lineas.forEach(linea => {
+      doc.text(linea, textoX, ty);
+      ty += 3.5;
+    });
+
+    const yFooter = y + h - 10;
+    doc.setDrawColor(220, 225, 230);
+    doc.setLineWidth(0.2);
+    doc.line(x + 3, yFooter, x + w - 3, yFooter);
+
+    doc.setTextColor(...col.COLOR_PRIMARIO);
+    doc.setFontSize(6);
+    doc.setFont('helvetica', 'bold');
+    const nombreCorto = persona.nombreCompleto.length > 40
+      ? persona.nombreCompleto.substring(0, 37) + '...'
+      : persona.nombreCompleto;
+    doc.text(nombreCorto.toUpperCase(), x + w / 2, yFooter + 3.5, { align: 'center' });
+
+    doc.setTextColor(...col.COLOR_GRIS);
+    doc.setFontSize(5);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`DNI: ${persona.dni}`, x + w / 2, yFooter + 7, { align: 'center' });
+  }
+
+  // ============================================
+  // INICIALIZAR
+  // ============================================
+  cargarDatos();
+</script>
+
+</body>
+</html>

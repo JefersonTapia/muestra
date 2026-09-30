@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>Habilitaciones del Personal</title>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0"></script>
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  * { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --azul-primario: #1e2b3c;
+    --azul-secundario: #2c3e50;
+    --azul-terciario: #3d5c7a;
+    --azul-acento: #3498db;
+    --gris-fondo: #f5f7fa;
+    --gris-borde: #e5eaf0;
+    --gris-texto: #5f6f80;
+    --blanco: #ffffff;
+    --verde: #27ae60;
+    --naranja: #e67e22;
+    --rojo: #e74c3c;
+    --sombra-suave: 0 2px 8px rgba(30, 43, 60, 0.04);
+    --sombra-media: 0 8px 24px rgba(30, 43, 60, 0.08);
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--gris-fondo);
+    color: var(--azul-primario);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body { padding: 20px; }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* ===== HEADER DE LA PÁGINA ===== */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .page-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .page-title .icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.3rem;
+    box-shadow: 0 6px 16px rgba(52, 152, 219, 0.3);
+    flex-shrink: 0;
+  }
+
+  .page-title h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--azul-primario);
+    margin: 0;
+    letter-spacing: -0.4px;
+  }
+
+  .page-title .subtitle {
+    font-size: 0.85rem;
+    color: var(--gris-texto);
+    margin-top: 2px;
+  }
+
+  /* ===== STATS CARDS ===== */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+
+  .stat-card {
+    background: var(--blanco);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--gris-borde);
+    box-shadow: var(--sombra-suave);
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 90px;
+    height: 90px;
+    background: radial-gradient(circle, rgba(52, 152, 219, 0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--sombra-media);
+  }
+
+  .stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+
+  .stat-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--gris-texto);
+    font-weight: 600;
+  }
+
+  .stat-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+  }
+
+  .stat-icon.azul { background: rgba(52, 152, 219, 0.12); color: #2980b9; }
+  .stat-icon.verde { background: rgba(39, 174, 96, 0.12); color: #27ae60; }
+  .stat-icon.naranja { background: rgba(230, 126, 34, 0.12); color: #e67e22; }
+  .stat-icon.rojo { background: rgba(231, 76, 60, 0.12); color: #e74c3c; }
+
+  .stat-value {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--azul-primario);
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+
+  .stat-sub {
+    font-size: 0.78rem;
+    color: var(--gris-texto);
+    margin-top: 4px;
+  }
+
+  /* ===== TOOLBAR ===== */
+  .toolbar {
+    background: var(--blanco);
+    border-radius: 16px;
+    padding: 16px 20px;
+    border: 1px solid var(--gris-borde);
+    box-shadow: var(--sombra-suave);
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .search-wrapper {
+    flex: 1;
+    min-width: 220px;
+    position: relative;
+  }
+
+  .search-wrapper i {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gris-texto);
+    font-size: 0.9rem;
+    pointer-events: none;
+  }
+
+  .search-wrapper input {
+    width: 100%;
+    padding: 12px 16px 12px 44px;
+    border: 1.5px solid var(--gris-borde);
+    border-radius: 12px;
+    font-size: 0.92rem;
+    font-family: inherit;
+    transition: all 0.2s;
+    background: var(--gris-fondo);
+    color: var(--azul-primario);
+  }
+
+  .search-wrapper input:focus {
+    outline: none;
+    border-color: var(--azul-acento);
+    background: var(--blanco);
+    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+  }
+
+  .leyenda {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 0.75rem;
+    color: var(--gris-texto);
+    font-weight: 500;
+  }
+
+  .leyenda span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-rojo { background: #e74c3c; box-shadow: 0 0 8px rgba(231, 76, 60, 0.4); }
+  .dot-naranja { background: #e67e22; box-shadow: 0 0 8px rgba(230, 126, 34, 0.4); }
+  .dot-verde { background: #27ae60; box-shadow: 0 0 8px rgba(39, 174, 96, 0.4); }
+  .dot-gris { background: #999; }
+
+  /* ===== TABLA ===== */
+  .tabla-card {
+    background: var(--blanco);
+    border-radius: 16px;
+    border: 1px solid var(--gris-borde);
+    box-shadow: var(--sombra-suave);
+    overflow: hidden;
+  }
+
+  .tabla-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 640px;
+  }
+
+  th {
+    background: #f9fbfd;
+    color: var(--gris-texto);
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 14px 18px;
+    text-align: left;
+    border-bottom: 1px solid var(--gris-borde);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #f0f3f7;
+    font-size: 0.88rem;
+    color: var(--azul-primario);
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  tbody tr:hover {
+    background: #f9fbfd;
+  }
+
+  tbody tr:active {
+    background: #eaf4fd;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* Avatar en la tabla */
+  .cell-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .mini-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3d5c7a 0%, #2c3e50 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .cell-name .name-text {
+    font-weight: 600;
+    color: var(--azul-primario);
+  }
+
+  /* Badge de estado */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .badge.verde {
+    background: rgba(39, 174, 96, 0.12);
+    color: #1e8449;
+  }
+
+  .badge.naranja {
+    background: rgba(230, 126, 34, 0.12);
+    color: #b9770e;
+  }
+
+  .badge.rojo {
+    background: rgba(231, 76, 60, 0.12);
+    color: #c0392b;
+  }
+
+  .badge.gris {
+    background: rgba(150, 150, 150, 0.15);
+    color: #666;
+  }
+
+  .badge i {
+    font-size: 0.65rem;
+  }
+
+  .no-data {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--gris-texto);
+    font-size: 0.9rem;
+  }
+
+  .no-data i {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 12px;
+    opacity: 0.4;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--gris-texto);
+    font-size: 0.9rem;
+  }
+
+  .loading i {
+    font-size: 1.5rem;
+    display: block;
+    margin-bottom: 12px;
+    color: var(--azul-acento);
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 25, 35, 0.55);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: var(--blanco);
+    border-radius: 20px;
+    max-width: 920px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 60px rgba(15, 25, 35, 0.3);
+    animation: fadeInUp 0.3s ease;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .modal-header {
+    background: linear-gradient(135deg, #1a2634 0%, #2c3e50 100%);
+    color: white;
+    padding: 22px 26px;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .modal-header-content {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .modal-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(52, 152, 219, 0.4);
+  }
+
+  .modal-header-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .modal-header-info h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.25;
+    word-break: break-word;
+  }
+
+  .modal-header-info .subtitle {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: #9fb3c8;
+    word-break: break-word;
+  }
+
+  .close-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-size: 1.3rem;
+    cursor: pointer;
+    line-height: 1;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .close-btn:hover {
+    background: rgba(255, 100, 100, 0.2);
+    transform: rotate(90deg);
+  }
+
+  .modal-body {
+    padding: 24px 26px;
+  }
+
+  .modal-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .toolbar-right {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  /* ===== BOTONES ===== */
+  .btn {
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-pdf {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.25);
+  }
+  .btn-pdf:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(231, 76, 60, 0.35);
+  }
+
+  .btn-edit {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.25);
+  }
+  .btn-edit:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(52, 152, 219, 0.35);
+  }
+
+  .btn-save {
+    background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.25);
+  }
+  .btn-save:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(39, 174, 96, 0.35);
+  }
+
+  .btn-cancel {
+    background: var(--gris-fondo);
+    color: var(--gris-texto);
+    border: 1.5px solid var(--gris-borde);
+  }
+  .btn-cancel:hover:not(:disabled) {
+    background: #e9eef4;
+    border-color: #cbd5e1;
+  }
+
+  /* ===== TABLA DEL MODAL ===== */
+  .cap-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.88rem;
+    min-width: 520px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--gris-borde);
+  }
+
+  .cap-table th {
+    background: #f9fbfd;
+    color: var(--gris-texto);
+    font-size: 0.7rem;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--gris-borde);
+  }
+
+  .cap-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f0f3f7;
+    white-space: normal;
+  }
+
+  .cap-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .cap-table tbody tr:hover {
+    background: #f9fbfd;
+  }
+
+  .cap-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Estados */
+  .estado {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+
+  .estado-vencido {
+    background: rgba(231, 76, 60, 0.12);
+    color: #c0392b;
+  }
+
+  .estado-por-vencer {
+    background: rgba(230, 126, 34, 0.12);
+    color: #b9770e;
+  }
+
+  .estado-vigente {
+    background: rgba(39, 174, 96, 0.12);
+    color: #1e8449;
+  }
+
+  .estado-sin {
+    background: rgba(150, 150, 150, 0.15);
+    color: #666;
+  }
+
+  .input-fecha {
+    padding: 9px 12px;
+    border: 1.5px solid var(--azul-acento);
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    width: 100%;
+    max-width: 180px;
+    background: white;
+    color: var(--azul-primario);
+    transition: all 0.2s;
+  }
+
+  .input-fecha:focus {
+    outline: none;
+    border-color: #2980b9;
+    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.12);
+  }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(120px);
+    background: var(--azul-secundario);
+    color: #fff;
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    box-shadow: 0 12px 32px rgba(30, 43, 60, 0.35);
+    opacity: 0;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2000;
+    max-width: calc(100% - 40px);
+    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .toast.success { background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%); }
+  .toast.error   { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 900px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 12px; }
+    .page-title h1 { font-size: 1.2rem; }
+    .page-title .icon-box { width: 42px; height: 42px; font-size: 1.1rem; }
+
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .stat-card { padding: 14px; border-radius: 14px; }
+    .stat-value { font-size: 1.5rem; }
+    .stat-icon { width: 30px; height: 30px; font-size: 0.8rem; }
+
+    .toolbar { flex-direction: column; align-items: stretch; padding: 14px; }
+    .search-wrapper { width: 100%; }
+
+    .leyenda { justify-content: center; font-size: 0.7rem; }
+
+    /* Ocultar columnas en móvil */
+    table th:nth-child(3),
+    table td:nth-child(3),
+    table th:nth-child(4),
+    table td:nth-child(4) { display: none; }
+
+    table { min-width: 0; }
+    th, td { padding: 12px 14px; font-size: 0.82rem; white-space: normal; }
+
+    /* Modal fullscreen en móvil */
+    .modal-overlay { padding: 0; align-items: stretch; }
+    .modal {
+      border-radius: 0;
+      max-height: 100vh;
+      height: 100vh;
+      max-width: 100vw;
+    }
+    .modal-header { border-radius: 0; padding: 18px; }
+    .modal-body { padding: 16px; }
+
+    .modal-toolbar { flex-direction: column; align-items: stretch; }
+    .toolbar-right { width: 100%; flex-direction: column; }
+    .toolbar-right .btn { width: 100%; }
+    #toolbarLeft { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+    #toolbarLeft .btn { width: 100%; }
+
+    .cap-table { min-width: 480px; }
+    .cap-table th, .cap-table td { padding: 10px 12px; font-size: 0.78rem; }
+    .input-fecha { width: 100%; max-width: 100%; }
+  }
+
+  @media (max-width: 380px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .leyenda { font-size: 0.65rem; }
+    .badge { font-size: 0.68rem; padding: 4px 9px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="icon-box">
+        <i class="fas fa-certificate"></i>
+      </div>
+      <div>
+        <h1>Habilitaciones del Personal</h1>
+        <div class="subtitle">Control de capacitaciones y certificaciones vigentes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-label">Total personal</div>
+        <div class="stat-icon azul"><i class="fas fa-users"></i></div>
+      </div>
+      <div class="stat-value" id="statTotal">—</div>
+      <div class="stat-sub">registrados en el sistema</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-label">Al día</div>
+        <div class="stat-icon verde"><i class="fas fa-check-circle"></i></div>
+      </div>
+      <div class="stat-value" id="statVigentes">—</div>
+      <div class="stat-sub">sin vencimientos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-label">Por vencer</div>
+        <div class="stat-icon naranja"><i class="fas fa-clock"></i></div>
+      </div>
+      <div class="stat-value" id="statPorVencer">—</div>
+      <div class="stat-sub">en los próximos 5 días</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-label">Vencidas</div>
+        <div class="stat-icon rojo"><i class="fas fa-exclamation-triangle"></i></div>
+      </div>
+      <div class="stat-value" id="statVencidas">—</div>
+      <div class="stat-sub">requieren renovación</div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="search-wrapper">
+      <i class="fas fa-search"></i>
+      <input type="text" id="searchInput" placeholder="Buscar por DNI o nombre...">
+    </div>
+    <div class="leyenda">
+      <span><i class="dot dot-rojo"></i> Vencida</span>
+      <span><i class="dot dot-naranja"></i> Por vencer</span>
+      <span><i class="dot dot-verde"></i> Vigente</span>
+      <span><i class="dot dot-gris"></i> Sin registro</span>
+    </div>
+  </div>
+
+  <!-- TABLA -->
+  <div class="tabla-card">
+    <div id="tableContainer" class="tabla-wrap">
+      <div class="loading">
+        <i class="fas fa-circle-notch"></i>
+        Cargando datos...
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-header-content">
+        <div class="modal-avatar" id="modalAvatar">—</div>
+        <div class="modal-header-info">
+          <h2 id="modalTitle">Detalle</h2>
+          <span class="subtitle" id="modalSubtitle"></span>
+        </div>
+      </div>
+      <button class="close-btn" id="closeModal" title="Cerrar">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-toolbar">
+        <div id="toolbarLeft"></div>
+        <div class="toolbar-right">
+          <button class="btn btn-edit" id="btnEdit"><i class="fas fa-pen"></i> Editar fechas</button>
+          <button class="btn btn-pdf" id="btnPDF"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+        </div>
+      </div>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  /* ============================================================
+     ⚙️ CONFIGURACIÓN SUPABASE
+     ============================================================ */
+  const SUPABASE_URL = 'https://rvcepyqjmobrdjalvvst.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_U94_NuEFTcz0HvQFjLHRzA_OxV3k5HN';
+  const TABLA = 'habilitaciones';
+
+  const { createClient } = supabase;
+  const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const COL_DNI = 'dni';
+  const COL_NOMBRE = 'nombres_apellidos';
+  const COL_CARGO = 'cargo';
+  const COL_EMPRESA = 'empresa';
+
+  const COLUMNAS_CAPACITACION = [
+    'induccion',
+    'lototo',
+    'altura',
+    'izaje',
+    'caliente',
+    'espacio_confinado'
+  ];
+
+  const ETIQUETAS_CAPACITACION = {
+    induccion: 'Inducción',
+    lototo: 'LOTOTO',
+    altura: 'Trabajo en Altura',
+    izaje: 'Izaje',
+    caliente: 'Trabajo en Caliente',
+    espacio_confinado: 'Espacio Confinado'
+  };
+
+  const DIAS_POR_VENCER = 5;
+
+  let personas = [];
+  let personaActual = null;
+  let modoEdicion = false;
+
+  const searchInput = document.getElementById('searchInput');
+  const tableContainer = document.getElementById('tableContainer');
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modalAvatar = document.getElementById('modalAvatar');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalSubtitle = document.getElementById('modalSubtitle');
+  const modalContent = document.getElementById('modalContent');
+  const closeModal = document.getElementById('closeModal');
+  const btnPDF = document.getElementById('btnPDF');
+  const btnEdit = document.getElementById('btnEdit');
+  const toolbarLeft = document.getElementById('toolbarLeft');
+  const toast = document.getElementById('toast');
+
+  // Stats
+  const statTotal = document.getElementById('statTotal');
+  const statVigentes = document.getElementById('statVigentes');
+  const statPorVencer = document.getElementById('statPorVencer');
+  const statVencidas = document.getElementById('statVencidas');
+
+  /* ============================================================ */
+  let toastTimer = null;
+  function mostrarToast(msg, tipo = 'success') {
+    const iconos = { success: 'fa-check-circle', error: 'fa-exclamation-circle' };
+    const icono = iconos[tipo] || 'fa-info-circle';
+    toast.innerHTML = `<i class="fas ${icono}"></i> ${msg}`;
+    toast.className = 'toast show ' + tipo;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text ?? '';
+    return div.innerHTML;
+  }
+  function escapeAttr(text) {
+    return String(text ?? '').replace(/"/g, '&quot;');
+  }
+
+  function iniciales(nombre) {
+    if (!nombre) return '—';
+    const p = nombre.trim().split(/\s+/);
+    if (p.length === 1) return p[0].substring(0, 2).toUpperCase();
+    return (p[0].charAt(0) + p[1].charAt(0)).toUpperCase();
+  }
+
+  function parsearFecha(valor) {
+    if (!valor) return null;
+    const s = String(valor).trim();
+    if (!s || s.toLowerCase() === 'no' || s === 'null') return null;
+    let fecha = new Date(s);
+    if (!isNaN(fecha.getTime())) return fecha;
+    const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+    if (m) {
+      let [_, d, mo, y] = m;
+      if (y.length === 2) y = '20' + y;
+      fecha = new Date(Number(y), Number(mo) - 1, Number(d));
+      if (!isNaN(fecha.getTime())) return fecha;
+    }
+    return null;
+  }
+
+  function normalizarFecha(valor) {
+    const f = parsearFecha(valor);
+    if (!f) return '';
+    const yyyy = f.getFullYear();
+    const mm = String(f.getMonth() + 1).padStart(2, '0');
+    const dd = String(f.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  function calcularEstado(fechaStr) {
+    const fecha = parsearFecha(fechaStr);
+    if (!fecha) {
+      return { clase: 'estado-sin', texto: 'Sin registro', fecha: null, dias: null, icono: 'fa-minus-circle' };
+    }
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const f = new Date(fecha); f.setHours(0, 0, 0, 0);
+    const diffDias = Math.round((f - hoy) / (1000 * 60 * 60 * 24));
+    const fechaTxt = f.toLocaleDateString('es-PE');
+
+    if (diffDias < 0) {
+      const v = Math.abs(diffDias);
+      return {
+        clase: 'estado-vencido',
+        texto: `Vencida hace ${v} día${v === 1 ? '' : 's'}`,
+        fecha: fechaTxt, dias: diffDias,
+        icono: 'fa-exclamation-circle'
+      };
+    }
+    if (diffDias <= DIAS_POR_VENCER) {
+      return {
+        clase: 'estado-por-vencer',
+        texto: diffDias === 0 ? 'Vence hoy' : `Por vencer (${diffDias}d)`,
+        fecha: fechaTxt, dias: diffDias,
+        icono: 'fa-clock'
+      };
+    }
+    return {
+      clase: 'estado-vigente',
+      texto: `Vigente (${diffDias}d)`,
+      fecha: fechaTxt, dias: diffDias,
+      icono: 'fa-check-circle'
+    };
+  }
+
+  /* ============================================================
+     CARGAR DATOS
+     ============================================================ */
+  async function cargarDatos() {
+    try {
+      const { data, error } = await supabaseClient
+        .from(TABLA)
+        .select('*')
+        .order('nombres_apellidos', { ascending: true });
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        tableContainer.innerHTML = `
+          <div class="no-data">
+            <i class="fas fa-inbox"></i>
+            No hay registros en la tabla
+          </div>`;
+        actualizarStats();
+        return;
+      }
+
+      const mapa = new Map();
+
+      data.forEach(fila => {
+        const dni = String(fila[COL_DNI] ?? '').trim();
+        const nombre = String(fila[COL_NOMBRE] ?? '').trim();
+        if (!dni || !nombre) return;
+
+        if (!mapa.has(dni)) {
+          mapa.set(dni, {
+            id: fila.id,
+            dni, nombre,
+            cargo: String(fila[COL_CARGO] ?? '').trim(),
+            empresa: String(fila[COL_EMPRESA] ?? '').trim(),
+            capacitaciones: {}
+          });
+        }
+        const persona = mapa.get(dni);
+        if (fila[COL_CARGO]) persona.cargo = String(fila[COL_CARGO]).trim();
+        if (fila[COL_EMPRESA]) persona.empresa = String(fila[COL_EMPRESA]).trim();
+
+        COLUMNAS_CAPACITACION.forEach(col => {
+          const valor = String(fila[col] ?? '').trim();
+          if (valor && valor.toLowerCase() !== 'no' && valor !== 'null') {
+            persona.capacitaciones[col] = valor;
+          }
+        });
+      });
+
+      personas = Array.from(mapa.values()).sort((a, b) =>
+        a.nombre.localeCompare(b.nombre)
+      );
+
+      renderTabla(personas);
+      actualizarStats();
+    } catch (err) {
+      console.error(err);
+      tableContainer.innerHTML = `
+        <div class="no-data">
+          <i class="fas fa-exclamation-circle" style="color:#e74c3c;"></i>
+          Error al cargar los datos<br>
+          <span style="font-size:0.8rem;">${err.message}</span>
+        </div>`;
+    }
+  }
+
+  /* ============================================================
+     STATS
+     ============================================================ */
+  function actualizarStats() {
+    let totalVigentes = 0, totalPorVencer = 0, totalVencidas = 0;
+
+    personas.forEach(p => {
+      const { vencidas, porVencer, vigentes } = contarEstados(p);
+      totalVencidas += vencidas;
+      totalPorVencer += porVencer;
+      totalVigentes += vigentes;
+    });
+
+    statTotal.textContent = personas.length;
+    statVigentes.textContent = totalVigentes;
+    statPorVencer.textContent = totalPorVencer;
+    statVencidas.textContent = totalVencidas;
+  }
+
+  function contarEstados(persona) {
+    let vencidas = 0, porVencer = 0, vigentes = 0;
+    COLUMNAS_CAPACITACION.forEach(col => {
+      const valor = persona.capacitaciones[col];
+      if (!valor) return;
+      const est = calcularEstado(valor);
+      if (est.clase === 'estado-vencido') vencidas++;
+      else if (est.clase === 'estado-por-vencer') porVencer++;
+      else if (est.clase === 'estado-vigente') vigentes++;
+    });
+    return { vencidas, porVencer, vigentes };
+  }
+
+  /* ============================================================
+     TABLA
+     ============================================================ */
+  function renderTabla(lista) {
+    if (lista.length === 0) {
+      tableContainer.innerHTML = `
+        <div class="no-data">
+          <i class="fas fa-search"></i>
+          No se encontraron resultados
+        </div>`;
+      return;
+    }
+
+    let html = `
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>DNI</th>
+            <th>Cargo</th>
+            <th>Empresa</th>
+            <th style="text-align:center;">Estado</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    lista.forEach(p => {
+      const { vencidas, porVencer, vigentes } = contarEstados(p);
+
+      let badgeClass = 'badge';
+      let badgeIcon = 'fa-check-circle';
+      let badgeText = '';
+
+      if (vencidas > 0) {
+        badgeClass = 'badge rojo';
+        badgeIcon = 'fa-exclamation-circle';
+        badgeText = `${vencidas} vencida${vencidas === 1 ? '' : 's'}`;
+      } else if (porVencer > 0) {
+        badgeClass = 'badge naranja';
+        badgeIcon = 'fa-clock';
+        badgeText = `${porVencer} por vencer`;
+      } else if (vigentes > 0) {
+        badgeClass = 'badge verde';
+        badgeIcon = 'fa-check-circle';
+        badgeText = `${vigentes} vigente${vigentes === 1 ? '' : 's'}`;
+      } else {
+        badgeClass = 'badge gris';
+        badgeIcon = 'fa-minus-circle';
+        badgeText = 'Sin datos';
+      }
+
+      html += `
+        <tr data-dni="${escapeAttr(p.dni)}">
+          <td>
+            <div class="cell-name">
+              <div class="mini-avatar">${iniciales(p.nombre)}</div>
+              <span class="name-text">${escapeHtml(p.nombre)}</span>
+            </div>
+          </td>
+          <td>${escapeHtml(p.dni)}</td>
+          <td>${escapeHtml(p.cargo || '—')}</td>
+          <td>${escapeHtml(p.empresa || '—')}</td>
+          <td style="text-align:center;">
+            <span class="${badgeClass}">
+              <i class="fas ${badgeIcon}"></i> ${badgeText}
+            </span>
+          </td>
+        </tr>`;
+    });
+
+    html += '</tbody></table>';
+    tableContainer.innerHTML = html;
+
+    tableContainer.querySelectorAll('tbody tr').forEach(tr => {
+      tr.addEventListener('click', () => {
+        const dni = tr.getAttribute('data-dni');
+        const persona = personas.find(p => p.dni === dni);
+        if (persona) abrirModal(persona);
+      });
+    });
+  }
+
+  /* ============================================================
+     BUSCADOR
+     ============================================================ */
+  searchInput.addEventListener('input', () => {
+    const termino = searchInput.value.trim().toLowerCase();
+    if (!termino) { renderTabla(personas); return; }
+    const filtrados = personas.filter(p =>
+      p.dni.toLowerCase().includes(termino) ||
+      p.nombre.toLowerCase().includes(termino)
+    );
+    renderTabla(filtrados);
+  });
+
+  /* ============================================================
+     MODAL
+     ============================================================ */
+  function abrirModal(persona) {
+    personaActual = persona;
+    modoEdicion = false;
+    modalAvatar.textContent = iniciales(persona.nombre);
+    modalTitle.textContent = persona.nombre;
+    modalSubtitle.textContent = `DNI: ${persona.dni}${persona.cargo ? ' · ' + persona.cargo : ''}${persona.empresa ? ' · ' + persona.empresa : ''}`;
+    toolbarLeft.innerHTML = '';
+    btnEdit.style.display = 'inline-flex';
+    renderModalContenido();
+    modalOverlay.classList.add('active');
+  }
+
+  function renderModalContenido() {
+    const persona = personaActual;
+
+    let html = `
+      <table class="cap-table">
+        <thead>
+          <tr>
+            <th>Capacitación</th>
+            <th>Estado</th>
+            <th>Fecha de vencimiento</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    COLUMNAS_CAPACITACION.forEach(col => {
+      const valor = persona.capacitaciones[col];
+      const est = calcularEstado(valor);
+      const etiqueta = ETIQUETAS_CAPACITACION[col] || col;
+
+      if (modoEdicion) {
+        const valorInput = normalizarFecha(valor);
+        html += `
+          <tr>
+            <td><strong>${escapeHtml(etiqueta)}</strong></td>
+            <td><span class="estado estado-sin"><i class="fas fa-pen"></i> Editando</span></td>
+            <td>
+              <input type="date"
+                     class="input-fecha"
+                     data-col="${escapeAttr(col)}"
+                     value="${valorInput}">
+            </td>
+          </tr>`;
+      } else {
+        html += `
+          <tr>
+            <td><strong>${escapeHtml(etiqueta)}</strong></td>
+            <td>
+              <span class="estado ${est.clase}">
+                <i class="fas ${est.icono}"></i> ${est.texto}
+              </span>
+            </td>
+            <td>${est.fecha ? escapeHtml(est.fecha) : '—'}</td>
+          </tr>`;
+      }
+    });
+
+    html += '</tbody></table>';
+    modalContent.innerHTML = `<div class="cap-table-wrap">${html}</div>`;
+  }
+
+  btnEdit.addEventListener('click', () => {
+    modoEdicion = true;
+    btnEdit.style.display = 'none';
+
+    toolbarLeft.innerHTML = `
+      <button class="btn btn-save" id="btnSave"><i class="fas fa-save"></i> Guardar cambios</button>
+      <button class="btn btn-cancel" id="btnCancel"><i class="fas fa-times"></i> Cancelar</button>
+    `;
+
+    renderModalContenido();
+
+    document.getElementById('btnSave').addEventListener('click', guardarCambios);
+    document.getElementById('btnCancel').addEventListener('click', () => {
+      modoEdicion = false;
+      btnEdit.style.display = 'inline-flex';
+      toolbarLeft.innerHTML = '';
+      renderModalContenido();
+    });
+  });
+
+  async function guardarCambios() {
+    const inputs = modalContent.querySelectorAll('.input-fecha');
+    const cambios = {};
+    let huboCambios = false;
+
+    inputs.forEach(inp => {
+      const col = inp.getAttribute('data-col');
+      const nuevoValor = inp.value.trim();
+      const valorAnterior = normalizarFecha(personaActual.capacitaciones[col] || '');
+      if (nuevoValor !== valorAnterior) {
+        cambios[col] = nuevoValor || null;
+        huboCambios = true;
+      }
+    });
+
+    if (!huboCambios) {
+      mostrarToast('No hubo cambios para guardar', 'error');
+      return;
+    }
+
+    const btnSave = document.getElementById('btnSave');
+    btnSave.disabled = true;
+    btnSave.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Guardando...';
+
+    try {
+      const { error } = await supabaseClient
+        .from(TABLA)
+        .update(cambios)
+        .eq('id', personaActual.id);
+
+      if (error) throw error;
+
+      Object.keys(cambios).forEach(col => {
+        if (!cambios[col]) {
+          delete personaActual.capacitaciones[col];
+        } else {
+          personaActual.capacitaciones[col] = cambios[col];
+        }
+      });
+
+      mostrarToast('Fechas actualizadas correctamente', 'success');
+
+      modoEdicion = false;
+      btnEdit.style.display = 'inline-flex';
+      toolbarLeft.innerHTML = '';
+      renderModalContenido();
+      renderTabla(personas);
+      actualizarStats();
+
+    } catch (err) {
+      console.error(err);
+      mostrarToast('Error al guardar: ' + err.message, 'error');
+      btnSave.disabled = false;
+      btnSave.innerHTML = '<i class="fas fa-save"></i> Guardar cambios';
+    }
+  }
+
+  function cerrarModal() {
+    if (modoEdicion) {
+      const confirmar = confirm('Tienes cambios sin guardar. ¿Cerrar de todos modos?');
+      if (!confirmar) return;
+    }
+    modalOverlay.classList.remove('active');
+    personaActual = null;
+    modoEdicion = false;
+    btnEdit.style.display = 'inline-flex';
+    toolbarLeft.innerHTML = '';
+  }
+
+  closeModal.addEventListener('click', cerrarModal);
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) cerrarModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modalOverlay.classList.contains('active')) cerrarModal();
+  });
+
+  /* ============================================================
+     PDF
+     ============================================================ */
+  btnPDF.addEventListener('click', () => {
+    if (!personaActual) return;
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Encabezado azul
+    doc.setFillColor(30, 43, 60);
+    doc.rect(0, 0, 210, 30, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SST PROSERING', 14, 13);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Constancia de Habilitaciones', 14, 21);
+    doc.setFontSize(9);
+    doc.text(`Emitido: ${new Date().toLocaleDateString('es-PE')}`, 196, 13, { align: 'right' });
+
+    doc.setTextColor(30, 43, 60);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Datos del Trabajador', 14, 42);
+    doc.setDrawColor(52, 152, 219);
+    doc.setLineWidth(0.5);
+    doc.line(14, 44, 60, 44);
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+
+    let y = 52;
+    const fila = (label, valor) => {
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(120, 120, 120);
+      doc.text(label + ':', 14, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(30, 43, 60);
+      doc.text(String(valor || '—'), 55, y);
+      y += 7;
+    };
+
+    fila('Nombre', personaActual.nombre);
+    fila('DNI', personaActual.dni);
+    if (personaActual.cargo) fila('Cargo', personaActual.cargo);
+    if (personaActual.empresa) fila('Empresa', personaActual.empresa);
+
+    // Resumen
+    y += 4;
+    const { vencidas, porVencer, vigentes } = contarEstados(personaActual);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(30, 43, 60);
+    doc.text('Resumen de Habilitaciones', 14, y);
+    doc.setDrawColor(52, 152, 219);
+    doc.line(14, y + 2, 65, y + 2);
+    y += 8;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(30, 132, 73);
+    doc.text(`● ${vigentes} vigentes`, 14, y);
+    doc.setTextColor(185, 119, 14);
+    doc.text(`● ${porVencer} por vencer`, 60, y);
+    doc.setTextColor(192, 57, 43);
+    doc.text(`● ${vencidas} vencidas`, 115, y);
+    y += 10;
+
+    // Tabla de capacitaciones
+    const filas = COLUMNAS_CAPACITACION.map(col => {
+      const valor = personaActual.capacitaciones[col];
+      const est = calcularEstado(valor);
+      const etiqueta = ETIQUETAS_CAPACITACION[col] || col;
+      return [etiqueta, est.texto, est.fecha || '—'];
+    });
+
+    doc.autoTable({
+      head: [['Capacitación', 'Estado', 'Fecha de vencimiento']],
+      body: filas,
+      startY: y,
+      styles: { fontSize: 9.5, cellPadding: 4, lineColor: [230, 235, 240], lineWidth: 0.1 },
+      headStyles: {
+        fillColor: [30, 43, 60],
+        textColor: 255,
+        fontStyle: 'bold',
+        fontSize: 10
+      },
+      alternateRowStyles: { fillColor: [249, 251, 253] },
+      margin: { left: 14, right: 14 },
+      didParseCell: function (data) {
+        if (data.section === 'body' && data.column.index === 1) {
+          const txt = data.cell.raw;
+          if (txt.startsWith('Vencida')) {
+            data.cell.styles.textColor = [192, 57, 43];
+            data.cell.styles.fontStyle = 'bold';
+          } else if (txt.startsWith('Por vencer') || txt === 'Vence hoy') {
+            data.cell.styles.textColor = [185, 119, 14];
+            data.cell.styles.fontStyle = 'bold';
+          } else if (txt.startsWith('Vigente')) {
+            data.cell.styles.textColor = [30, 132, 73];
+            data.cell.styles.fontStyle = 'bold';
+          } else {
+            data.cell.styles.textColor = [120, 120, 120];
+          }
+        }
+      }
+    });
+
+    // Pie
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(`Página ${i} de ${pageCount}`, 105, doc.internal.pageSize.height - 8, { align: 'center' });
+      doc.text('Documento generado automáticamente por SST PROSERING', 105, doc.internal.pageSize.height - 14, { align: 'center' });
+    }
+
+    const nombreArchivo = `Habilitaciones_${personaActual.dni}_${personaActual.nombre.replace(/\s+/g, '_')}.pdf`;
+    doc.save(nombreArchivo);
+    mostrarToast('PDF generado correctamente', 'success');
+  });
+
+  /* ============================================================ */
+  cargarDatos();
+</script>
+
+</body>
+</html>

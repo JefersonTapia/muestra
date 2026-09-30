@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Cuaderno SST · Gestión Profesional</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --azul-primario: #1e2b3c;
+      --azul-secundario: #2c3e50;
+      --azul-terciario: #3d5c7a;
+      --azul-acento: #3498db;
+      --gris-fondo: #f5f7fa;
+      --gris-borde: #e5eaf0;
+      --gris-texto: #5f6f80;
+      --blanco: #ffffff;
+      --verde: #27ae60;
+      --naranja: #e67e22;
+      --rojo: #e74c3c;
+      --sombra-suave: 0 2px 8px rgba(30, 43, 60, 0.04);
+      --sombra-media: 0 8px 24px rgba(30, 43, 60, 0.08);
+      --sombra-fuerte: 0 12px 32px rgba(30, 43, 60, 0.12);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--gris-fondo);
+      display: flex;
+      min-height: 100vh;
+      color: var(--azul-primario);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ============ SIDEBAR ============ */
+    .sidebar {
+      width: 260px;
+      background: linear-gradient(180deg, #1a2634 0%, #1e2b3c 100%);
+      color: #e9edf2;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08);
+      flex-shrink: 0;
+      position: relative;
+      z-index: 100;
+    }
+
+    .sidebar-header {
+      padding: 26px 24px 22px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .sidebar-header {
+      padding: 26px 24px 22px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: background 0.2s ease;
+    }
+
+    .sidebar-header:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .sidebar-header:hover .sidebar-logo {
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
+    }
+
+    .sidebar-logo {
+      transition: all 0.2s ease;
+    }
+
+    .sidebar-logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      color: white;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+
+    .sidebar-title {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.15;
+    }
+
+    .sidebar-title h2 {
+      font-weight: 600;
+      font-size: 1.05rem;
+      letter-spacing: 0.5px;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    .sidebar-title span {
+      font-weight: 400;
+      font-size: 0.7rem;
+      color: #8ba0b8;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 8px 14px 20px;
+      overflow-y: auto;
+    }
+
+    .sidebar-nav ul {
+      list-style: none;
+    }
+
+    .nav-section {
+      margin-bottom: 2px;
+    }
+
+    .nav-main-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      margin: 2px 0;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #b1c3d4;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      width: 100%;
+      text-align: left;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .nav-main-item i.nav-icon {
+      font-size: 1rem;
+      width: 20px;
+      text-align: center;
+      opacity: 0.85;
+      transition: all 0.2s;
+    }
+
+    .nav-main-item .nav-label {
+      flex: 1;
+    }
+
+    .nav-main-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #ffffff;
+    }
+
+    .nav-main-item:hover i.nav-icon {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+
+    .nav-main-item.active {
+      background: linear-gradient(90deg, rgba(52, 152, 219, 0.18) 0%, rgba(52, 152, 219, 0.08) 100%);
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .nav-main-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 60%;
+      background: #3498db;
+      border-radius: 0 3px 3px 0;
+    }
+
+    .nav-main-item.active i.nav-icon {
+      color: #3498db;
+      opacity: 1;
+    }
+
+    .arrow {
+      font-size: 0.7rem;
+      opacity: 0.5;
+      transition: transform 0.25s ease;
+    }
+
+    .arrow.rotated {
+      transform: rotate(90deg);
+      opacity: 0.9;
+    }
+
+    .submenu {
+      list-style: none;
+      margin: 0 0 4px 16px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+      border-left: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .submenu.open {
+      max-height: 300px;
+    }
+
+    .submenu li a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px 9px 20px;
+      margin: 2px 0;
+      font-size: 0.85rem;
+      color: #8ba0b8;
+      text-decoration: none;
+      transition: all 0.2s;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .submenu li a::before {
+      content: '';
+      width: 4px;
+      height: 4px;
+      background: currentColor;
+      border-radius: 50%;
+      opacity: 0.5;
+      transition: all 0.2s;
+    }
+
+    .submenu li a:hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: #ffffff;
+      padding-left: 24px;
+    }
+
+    .submenu li a:hover::before {
+      opacity: 1;
+      background: #3498db;
+    }
+
+    .sidebar-footer {
+      padding: 16px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 0.72rem;
+      color: #6b859e;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sidebar-footer .status-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: #27ae60;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(39, 174, 96, 0.6);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* ============ MAIN ============ */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--gris-fondo);
+      width: calc(100% - 260px);
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 36px;
+      background: var(--blanco);
+      border-bottom: 1px solid var(--gris-borde);
+      flex-wrap: wrap;
+      gap: 15px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 1px 3px rgba(30, 43, 60, 0.03);
+    }
+
+    .title-section h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: var(--azul-primario);
+      letter-spacing: -0.4px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .title-section h1::before {
+      content: '';
+      width: 4px;
+      height: 24px;
+      background: linear-gradient(180deg, #3498db 0%, #2980b9 100%);
+      border-radius: 2px;
+    }
+
+    .title-section .breadcrumb {
+      color: var(--gris-texto);
+      font-size: 0.88rem;
+      margin-top: 6px;
+      margin-left: 16px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--gris-fondo);
+      padding: 6px 16px 6px 6px;
+      border-radius: 40px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .user-info:hover {
+      background: #eaf0f6;
+      border-color: var(--gris-borde);
+      transform: translateY(-1px);
+    }
+
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, #3d5c7a 0%, #2c3e50 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-weight: 600;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(61, 92, 122, 0.3);
+    }
+
+    .user-details {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+
+    .user-name {
+      font-weight: 600;
+      color: var(--azul-primario);
+      font-size: 0.88rem;
+    }
+
+    .user-role {
+      font-size: 0.72rem;
+      color: var(--gris-texto);
+    }
+
+    #dynamic-panel {
+      width: 100%;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    /* ============ CARDS ============ */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      padding: 28px 36px;
+    }
+
+    .metric-card {
+      background: var(--blanco);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--sombra-suave);
+      border: 1px solid var(--gris-borde);
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+      cursor: default;
+    }
+
+    .metric-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, rgba(52, 152, 219, 0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--sombra-media);
+      border-color: rgba(52, 152, 219, 0.2);
+    }
+
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--gris-texto);
+      font-weight: 600;
+    }
+
+    .metric-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+
+    .metric-icon.azul {
+      background: rgba(52, 152, 219, 0.12);
+      color: #2980b9;
+    }
+
+    .metric-icon.verde {
+      background: rgba(39, 174, 96, 0.12);
+      color: #27ae60;
+    }
+
+    .metric-icon.naranja {
+      background: rgba(230, 126, 34, 0.12);
+      color: #e67e22;
+    }
+
+    .metric-value {
+      font-size: 2.3rem;
+      font-weight: 600;
+      color: var(--azul-primario);
+      margin: 6px 0;
+      line-height: 1.1;
+      letter-spacing: -1px;
+    }
+
+    .metric-trend {
+      font-size: 0.82rem;
+      color: var(--gris-texto);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .metric-trend.pos { color: var(--verde); }
+    .metric-trend.neg { color: var(--rojo); }
+
+    /* ============ PLACEHOLDER ============ */
+    .placeholder-panel {
+      background: var(--blanco);
+      border-radius: 16px;
+      padding: 32px;
+      border: 1px solid var(--gris-borde);
+      color: var(--gris-texto);
+      font-size: 0.95rem;
+      margin: 0 36px 28px;
+      box-shadow: var(--sombra-suave);
+    }
+
+    .placeholder-panel .hint {
+      color: var(--gris-texto);
+      margin-bottom: 12px;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 600;
+    }
+
+    .placeholder-panel strong {
+      font-weight: 600;
+      color: var(--azul-primario);
+      font-size: 1rem;
+    }
+
+    /* ============ IFRAME ============ */
+    .iframe-full {
+      width: 100%;
+      height: calc(100vh - 100px);
+      min-height: 700px;
+      border: none;
+      display: block;
+      background: var(--gris-fondo);
+    }
+
+    /* ============ SCROLLBAR ============ */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+      background: #c5d0db;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: #8c9eb0; }
+
+    /* ============ RESPONSIVE ============ */
+    @media (max-width: 992px) {
+      .sidebar { width: 220px; }
+      .main { width: calc(100% - 220px); }
+      .card-grid { grid-template-columns: repeat(2, 1fr); padding: 24px; }
+      .top-bar { padding: 18px 24px; }
+      .placeholder-panel { margin: 0 24px 24px; }
+    }
+
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+
+      .sidebar {
+        width: 100%;
+        height: auto;
+        max-height: 60vh;
+      }
+
+      .sidebar-header { padding: 18px 20px; }
+
+      .sidebar-nav {
+        max-height: 250px;
+        padding: 8px 12px 16px;
+      }
+
+      .main { width: 100%; }
+
+      .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px 20px;
+      }
+
+      .user-info { align-self: flex-end; }
+
+      .card-grid {
+        grid-template-columns: 1fr;
+        padding: 20px;
+        gap: 14px;
+      }
+
+      .placeholder-panel { margin: 0 20px 20px; }
+
+      .metric-value { font-size: 2rem; }
+
+      .iframe-full { height: 1200px; }
+
+      .title-section h1 { font-size: 1.3rem; }
+      .title-section .breadcrumb { margin-left: 16px; }
+    }
+
+    @media (max-width: 480px) {
+      .sidebar-title h2 { font-size: 0.95rem; }
+      .nav-main-item { font-size: 0.85rem; padding: 10px 12px; }
+      .submenu li a { font-size: 0.8rem; }
+      .top-bar { padding: 14px 16px; }
+      .card-grid { padding: 16px; }
+      .placeholder-panel { margin: 0 16px 16px; padding: 20px; }
+      .metric-card { padding: 20px; }
+      .iframe-full { height: 1500px; }
+      .user-details { display: none; }
+    }
+
+    /* ============ DROPDOWN USUARIO ============ */
+    #userDropdown {
+      position: fixed;
+      top: 75px;
+      right: 25px;
+      width: 240px;
+      background: #ffffff;
+      border-radius: 14px;
+      box-shadow: 0 20px 40px rgba(30, 43, 60, 0.15);
+      border: 1px solid var(--gris-borde);
+      padding: 8px;
+      display: none;
+      z-index: 99999;
+      overflow: hidden;
+    }
+
+    #userDropdown.show {
+      display: block;
+      animation: dropdownIn 0.2s ease;
+    }
+
+    @keyframes dropdownIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    #userDropdown .dd-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: linear-gradient(135deg, #f5f7fa 0%, #eaf0f6 100%);
+      border-radius: 10px;
+      margin-bottom: 6px;
+    }
+
+    #userDropdown .dd-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3d5c7a 0%, #2c3e50 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    #userDropdown .dd-name {
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--azul-primario);
+      margin: 0;
+    }
+
+    #userDropdown .dd-email {
+      font-size: 0.7rem;
+      color: var(--gris-texto);
+      margin: 2px 0 0;
+    }
+
+    #userDropdown .dd-btn {
+      width: 100%;
+      padding: 10px 12px;
+      background: none;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #c62828;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.2s;
+    }
+
+    #userDropdown .dd-btn:hover {
+      background: #ffebee;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ======================= SIDEBAR ======================= -->
+  <aside class="sidebar">
+    <div class="sidebar-header" onclick="irAlInicio()" style="cursor: pointer;" title="Volver al inicio">
+      <div class="sidebar-logo">
+        <i class="fas fa-shield-halved"></i>
+      </div>
+      <div class="sidebar-title">
+        <h2>SST</h2>
+        <span>PROSERING</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ul>
+        <li class="nav-section">
+          <div class="nav-main-item" onclick="toggleSubmenu('reportabilidad', this)">
+            <i class="fas fa-chart-line nav-icon"></i>
+            <span class="nav-label">Reportabilidad</span>
+            <i class="fas fa-chevron-right arrow" id="arrow-reportabilidad"></i>
+          </div>
+          <ul class="submenu" id="submenu-reportabilidad">
+            <li><a href="#" onclick="updateContent('RACI', this)">RACI</a></li>
+            <li><a href="#" onclick="updateContent('Capacitaciones', this)">Capacitaciones</a></li>
+            <li><a href="#" onclick="updateContent('Desempeño', this)">Desempeño</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-section">
+          <div class="nav-main-item" onclick="toggleSubmenu('formatos', this)">
+            <i class="fas fa-file-lines nav-icon"></i>
+            <span class="nav-label">Formatos</span>
+            <i class="fas fa-chevron-right arrow" id="arrow-formatos"></i>
+          </div>
+          <ul class="submenu" id="submenu-formatos">
+            <li><a href="#" onclick="updateContent('Cerro verde', this)">Cerro Verde</a></li>
+            <li><a href="#" onclick="updateContent('AngloAmerican', this)">AngloAmerican</a></li>
+            <li><a href="#" onclick="updateContent('HUDBAY', this)">HUDBAY</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-section">
+          <div class="nav-main-item" onclick="toggleSubmenu('procedimiento', this)">
+            <i class="fas fa-clipboard-list nav-icon"></i>
+            <span class="nav-label">Procedimientos</span>
+            <i class="fas fa-chevron-right arrow" id="arrow-procedimiento"></i>
+          </div>
+          <ul class="submenu" id="submenu-procedimiento">
+            <li><a href="#" onclick="updateContent('Cerro verde', this)">Cerro Verde</a></li>
+            <li><a href="#" onclick="updateContent('AngloAmerican', this)">AngloAmerican</a></li>
+            <li><a href="#" onclick="updateContent('HUDBAY', this)">HUDBAY</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-section">
+          <div class="nav-main-item" onclick="toggleSubmenu('inv accidentes', this)">
+            <i class="fas fa-triangle-exclamation nav-icon"></i>
+            <span class="nav-label">Inv. Accidentes</span>
+            <i class="fas fa-chevron-right arrow" id="arrow-inv accidentes"></i>
+          </div>
+          <ul class="submenu" id="submenu-inv accidentes">
+            <li><a href="#" onclick="updateContent('Anexo 2', this)">Anexo 02</a></li>
+            <li><a href="#" onclick="updateContent('SCAT', this)">SCAT</a></li>
+            <li><a href="#" onclick="updateContent('Ishikawa', this)">Ishikawa</a></li>
+            <li><a href="#" onclick="updateContent('5 Whys', this)">5 Whys</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-section">
+          <div class="nav-main-item" onclick="toggleSubmenu('gest personal', this)">
+            <i class="fas fa-users nav-icon"></i>
+            <span class="nav-label">Gestión Personal</span>
+            <i class="fas fa-chevron-right arrow" id="arrow-gest personal"></i>
+          </div>
+          <ul class="submenu" id="submenu-gest personal">
+            <li><a href="#" onclick="updateContent('Licencias', this)">Licencias</a></li>
+            <li><a href="#" onclick="updateContent('Habilitaciones', this)">Habilitaciones</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-section">
+          <div class="nav-main-item" onclick="toggleSubmenu('dashboard', this)">
+            <i class="fas fa-gauge-high nav-icon"></i>
+            <span class="nav-label">Dashboard</span>
+            <i class="fas fa-chevron-right arrow" id="arrow-dashboard"></i>
+          </div>
+          <ul class="submenu" id="submenu-dashboard">
+            <li><a href="#" onclick="updateContent('Dashboard 01', this)">Seguridad</a></li>
+            <li><a href="#" onclick="updateContent('Dashboard 02', this)">Medio Ambiente</a></li>
+            <li><a href="#" onclick="updateContent('Dashboard 03', this)">Salud Ocupacional</a></li>
+            <li><a href="#" onclick="updateContent('Dashboard 04', this)">Operaciones</a></li>
+            <li><a href="#" onclick="updateContent('Dashboard 05', this)">Gerencial</a></li>
+          </ul>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span class="status-dot">En línea</span>
+      <span>v.2.1</span>
+    </div>
+  </aside>
+
+  <!-- ======================= MAIN ======================= -->
+  <main class="main" id="mainContainer">
+    <div class="top-bar">
+      <div class="title-section">
+        <h1 id="main-heading">Dashboard</h1>
+        <div class="breadcrumb" id="main-breadcrumb">Resumen de indicadores SST</div>
+      </div>
+      <div class="user-info">
+        <div class="user-details">
+          <span class="user-name" id="topUserName">—</span>
+          <span class="user-role" id="topUserRole">—</span>
+        </div>
+        <div class="user-avatar" id="topUserAvatar">—</div>
+      </div>
+    </div>
+
+    <div id="dynamic-panel">
+      <div class="card-grid">
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-label">Índice de frecuencia</div>
+            <div class="metric-icon azul">
+              <i class="fas fa-chart-line"></i>
+            </div>
+          </div>
+          <div class="metric-value">2,4</div>
+          <div class="metric-trend neg">
+            <i class="fas fa-arrow-down"></i> 0,3 vs periodo anterior
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-label">Días sin accidente</div>
+            <div class="metric-icon verde">
+              <i class="fas fa-shield-check"></i>
+            </div>
+          </div>
+          <div class="metric-value">187</div>
+          <div class="metric-trend pos">
+            <i class="fas fa-arrow-up"></i> récord: 210
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-label">Capacitaciones</div>
+            <div class="metric-icon naranja">
+              <i class="fas fa-graduation-cap"></i>
+            </div>
+          </div>
+          <div class="metric-value">16</div>
+          <div class="metric-trend">
+            <i class="fas fa-calendar"></i> 4 programadas
+          </div>
+        </div>
+      </div>
+
+      <div class="placeholder-panel">
+        <div class="hint">Vista general</div>
+        <p><strong>Indicadores clave</strong> · Seleccione una sección del menú lateral para ver detalles específicos.</p>
+        <p style="margin-top: 14px; font-size: 0.82rem;">Última actualización: 13 de marzo 2026</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- ======================= SCRIPT ======================= -->
+  <script>
+
+    // ============================================
+    // 🔒 PROTECCIÓN DE SESIÓN
+    // ============================================
+    (function protegerSesion() {
+      const usuario = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
+      if (!usuario) {
+        // Sin sesión → al login
+        window.location.replace('../index.html');
+        return;
+      }
+
+      // Bloquear el botón "Atrás" del navegador
+      history.pushState(null, null, location.href);
+      window.addEventListener('popstate', function() {
+        // Cada vez que el usuario intente volver atrás, lo regresamos
+        history.pushState(null, null, location.href);
+      });
+    })();
+    // ------------------- SUBMENÚ -------------------
+    function toggleSubmenu(id, element) {
+      const submenu = document.getElementById(`submenu-${id}`);
+      const arrow = document.getElementById(`arrow-${id}`);
+      if (submenu) {
+        submenu.classList.toggle('open');
+        if (arrow) arrow.classList.toggle('rotated');
+      }
+      if (element) element.classList.toggle('active');
+    }
+
+    // ------------------- MARCAR ITEM ACTIVO -------------------
+    function marcarActivo(elementoLink) {
+      // Quitar activos previos
+      document.querySelectorAll('.submenu li a').forEach(a => {
+        a.classList.remove('active');
+        a.style.background = '';
+        a.style.color = '';
+      });
+      // Marcar el actual
+      if (elementoLink) {
+        elementoLink.classList.add('active');
+        elementoLink.style.background = 'rgba(52, 152, 219, 0.12)';
+        elementoLink.style.color = '#ffffff';
+      }
+    }
+
+    // ------------------- ACTUALIZAR CONTENIDO -------------------
+    function updateContent(section, elemento) {
+      const heading = document.getElementById('main-heading');
+      const breadcrumb = document.getElementById('main-breadcrumb');
+      const panel = document.getElementById('dynamic-panel');
+
+      heading.innerText = section;
+      marcarActivo(elemento);
+
+      // ========== RACI ==========
+      if (section === 'RACI') {
+        breadcrumb.innerText = 'Formulario de reporte de actos y condiciones';
+        panel.innerHTML = `<iframe class="iframe-full" src="../RACI/index.html" loading="lazy"></iframe>`;
+      }
+
+      // ========== CAPACITACIONES ==========
+      else if (section === 'Capacitaciones') {
+        breadcrumb.innerText = 'Registro de capacitaciones · programa SST';
+        panel.innerHTML = `<iframe class="iframe-full" src="../Cap/index.html" loading="lazy"></iframe>`;
+      }
+
+      // ========== DESEMPEÑO ==========
+      else if (section === 'Desempeño') {
+        breadcrumb.innerText = 'Detalle de desempeño · información corporativa';
+        panel.innerHTML = `
+          <div class="card-grid">
+            <div class="metric-card">
+              <div class="metric-header">
+                <div class="metric-label">Evaluaciones</div>
+                <div class="metric-icon azul"><i class="fas fa-clipboard-check"></i></div>
+              </div>
+              <div class="metric-value">89</div>
+              <div class="metric-trend">Último ciclo</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-header">
+                <div class="metric-label">Cumplimiento</div>
+                <div class="metric-icon verde"><i class="fas fa-check-double"></i></div>
+              </div>
+              <div class="metric-value">91%</div>
+              <div class="metric-trend pos">Meta 90%</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-header">
+                <div class="metric-label">Observaciones</div>
+                <div class="metric-icon naranja"><i class="fas fa-comment-dots"></i></div>
+              </div>
+              <div class="metric-value">12</div>
+              <div class="metric-trend">Destacadas</div>
+            </div>
+          </div>
+          <div class="placeholder-panel">
+            <div class="hint">Análisis</div>
+            <p><strong>Indicadores de desempeño</strong> · desglose por área y cargo.</p>
+          </div>
+        `;
+      }
+
+      // ========== ANEXO 2 ==========
+      else if (section === 'Anexo 2') {
+        breadcrumb.innerText = 'Anexo 02 · Unidad Cerro Verde';
+        panel.innerHTML = `<iframe class="iframe-full" src="../Anexo 2/index.html" loading="lazy"></iframe>`;
+      }
+
+      // ========== SCAT ==========
+      else if (section === 'SCAT') {
+        breadcrumb.innerText = 'Análisis de causa raíz · SCAT';
+        panel.innerHTML = `<iframe class="iframe-full" src="../SCAT/index.html" loading="lazy"></iframe>`;
+      }
+
+      // ========== ISHIKAWA ==========
+      else if (section === 'Ishikawa') {
+        breadcrumb.innerText = 'Análisis de causa raíz · Ishikawa';
+        panel.innerHTML = `<iframe class="iframe-full" src="../Ishikawa/index.html" loading="lazy"></iframe>`;
+      }
+
+      // ========== 5 WHYS ==========
+      else if (section === '5 Whys') {
+        breadcrumb.innerText = 'Análisis de causa raíz · 5 Whys';
+        panel.innerHTML = `<iframe class="iframe-full" src="../5 Porques/index.html" loading="lazy"></iframe>`;
+      }
+
+      // ========== HABILITACIONES ==========
+      else if (section === 'Habilitaciones') {
+        breadcrumb.innerText = 'Control de capacitaciones del personal';
+        panel.innerHTML = `<iframe class="iframe-full" src="../Capacitaciones/index.html" loading="lazy"></iframe>`;
+      }
+
+      // ========== LICENCIAS ==========
+      else if (section === 'Licencias') {
+        breadcrumb.innerText = 'Emisión de licencias de conducir';
+        panel.innerHTML = `<iframe class="iframe-full" src="../Licencias/index.html" loading="lazy"></iframe>`;
+      }
+
+      // ========== DASHBOARDS ==========
+      else if (section === 'Dashboard 01') {
+        breadcrumb.innerText = 'Dashboard Seguridad · Power BI';
+        panel.innerHTML = `<iframe class="iframe-full" src="https://app.powerbi.com/view?r=eyJrIjoiMzQ3YWQ0MGItOTNjMS00YTBhLWI2ZjYtZTI1ZTZkODRhYWUyIiwidCI6IjAwMDE1ZDkyLTIxYWQtNDhhOC04NDQ1LWE3ZDY4YmY4OTliZCIsImMiOjR9" loading="lazy"></iframe>`;
+      }
+
+      else if (section === 'Dashboard 02') {
+        breadcrumb.innerText = 'Dashboard Medio Ambiente · Power BI';
+        panel.innerHTML = `<iframe class="iframe-full" src="https://app.powerbi.com/view?r=eyJrIjoiODhmODY3N2QtODMyNy00NWJhLTg4N2MtZjUxNTdjOTZkNmM3IiwidCI6IjAwMDE1ZDkyLTIxYWQtNDhhOC04NDQ1LWE3ZDY4YmY4OTliZCIsImMiOjR9" loading="lazy"></iframe>`;
+      }
+
+      else if (section === 'Dashboard 03') {
+        breadcrumb.innerText = 'Dashboard Salud Ocupacional · Power BI';
+        panel.innerHTML = `<iframe class="iframe-full" src="https://www.youtube.com/embed/dQw4w9WgXcQ" loading="lazy"></iframe>`;
+      }
+
+      else if (section === 'Dashboard 04') {
+        breadcrumb.innerText = 'Dashboard Operaciones · Power BI';
+        panel.innerHTML = `<iframe class="iframe-full" src="https://www.youtube.com/embed/dQw4w9WgXcQ" loading="lazy"></iframe>`;
+      }
+
+      else if (section === 'Dashboard 05') {
+        breadcrumb.innerText = 'Dashboard Gerencial · Power BI';
+        panel.innerHTML = `<iframe class="iframe-full" src="https://www.youtube.com/embed/dQw4w9WgXcQ" loading="lazy"></iframe>`;
+      }
+
+      else {
+        breadcrumb.innerText = 'Sección en estructuración';
+        panel.innerHTML = `<div class="placeholder-panel">Sección ${section} · en desarrollo.</div>`;
+      }
+    }
+
+    window.addEventListener('load', function() {
+      document.querySelectorAll('.submenu').forEach(el => el.classList.remove('open'));
+      document.querySelectorAll('.arrow').forEach(el => el.classList.remove('rotated'));
+    });
+    
+    (function() {
+      // ============================================
+      // 👤 LEER USUARIO LOGUEADO
+      // ============================================
+      let usuario = null;
+      try {
+        usuario = JSON.parse(localStorage.getItem('currentUser'))
+              || JSON.parse(sessionStorage.getItem('currentUser'));
+      } catch (e) {
+        console.warn('No se pudo leer currentUser:', e);
+      }
+
+      const nombre  = usuario?.name || usuario?.nombre || 'Usuario';
+      const cargo   = usuario?.cargo || 'Sin cargo';
+      const email   = usuario?.usuario || usuario?.email || '';
+
+      // ============================================
+      // 🔤 CALCULAR NOMBRE CORTO Y SIGLAS
+      // ============================================
+      const partes = nombre.trim().split(/\s+/).filter(Boolean);
+      const conectores = ['del', 'de', 'la', 'las', 'los', 'y', 'van', 'von'];
+
+      // Nombre corto: "J. Quispe" o "C. Del Carpio"
+      let nombreCorto = nombre;
+      if (partes.length >= 2) {
+        const inicial = partes[0].charAt(0).toUpperCase();
+        let apellido = partes[1];
+
+        if (partes.length >= 3 && conectores.includes(partes[1].toLowerCase())) {
+          apellido = partes[1] + ' ' + partes[2];
+        }
+
+        apellido = apellido
+          .toLowerCase()
+          .split(' ')
+          .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+          .join(' ');
+
+        nombreCorto = inicial + '. ' + apellido;
+      }
+
+      // Siglas: "JQ" o "CD"
+      let siglas = '—';
+      if (partes.length >= 2) {
+        siglas = (partes[0].charAt(0) + partes[1].charAt(0)).toUpperCase();
+      } else if (partes.length === 1) {
+        siglas = partes[0].substring(0, 2).toUpperCase();
+      }
+
+      // ============================================
+      // 🖼️ ACTUALIZAR TOP-BAR PRINCIPAL
+      // ============================================
+      const elNombre = document.getElementById('topUserName');
+      const elRol    = document.getElementById('topUserRole');
+      const elAvatar = document.getElementById('topUserAvatar');
+
+      if (elNombre) elNombre.textContent = nombreCorto;
+      if (elRol)    elRol.textContent    = cargo;
+      if (elAvatar) elAvatar.textContent = siglas;
+
+      // ============================================
+      // 📋 CREAR DROPDOWN FLOTANTE
+      // ============================================
+      var dd = document.createElement('div');
+      dd.id = 'userDropdown';
+      dd.innerHTML = 
+        '<div class="dd-header">' +
+          '<div class="dd-avatar">' + siglas + '</div>' +
+          '<div>' +
+            '<p class="dd-name">' + nombre + '</p>' +
+            '<p class="dd-email">' + email + '</p>' +
+            '<p class="dd-email">' + cargo + '</p>' +
+          '</div>' +
+        '</div>' +
+        '<hr class="dd-line">' +
+        '<button class="dd-btn" onclick="cerrarSesion()">' +
+          '<i class="fas fa-sign-out-alt"></i> Cerrar sesión' +
+        '</button>';
+      document.body.appendChild(dd);
+
+      // ============================================
+      // 🖱️ EVENTOS DE CLIC
+      // ============================================
+      document.addEventListener('click', function(e) {
+        var userInfo = e.target.closest('.user-info');
+        if (userInfo) {
+          e.stopPropagation();
+          dd.classList.toggle('show');
+        } else if (!dd.contains(e.target)) {
+          dd.classList.remove('show');
+        }
+      });
+    })();
+    function cerrarSesion() {
+      if (!confirm('¿Cerrar sesión?')) return;
+
+      // Limpiar TODA la sesión
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('sst_logged_in');
+      localStorage.removeItem('sst_user');
+      sessionStorage.removeItem('currentUser');
+      sessionStorage.clear();
+
+      // replace() NO deja la página actual en el historial
+      window.location.replace('../index.html');
+    }
+  
+  // ===== VOLVER AL INICIO (DASHBOARD) =====
+    function irAlInicio() {
+      // Cambiar heading y breadcrumb
+      document.getElementById('main-heading').innerText = 'Dashboard';
+      document.getElementById('main-breadcrumb').innerText = 'Resumen de indicadores SST';
+
+      // Renderizar el contenido inicial del dashboard
+      document.getElementById('dynamic-panel').innerHTML = `
+        <div class="card-grid">
+          <div class="metric-card">
+            <div class="metric-header">
+              <div class="metric-label">Índice de frecuencia</div>
+              <div class="metric-icon azul">
+                <i class="fas fa-chart-line"></i>
+              </div>
+            </div>
+            <div class="metric-value">2,4</div>
+            <div class="metric-trend neg">
+              <i class="fas fa-arrow-down"></i> 0,3 vs periodo anterior
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <div class="metric-label">Días sin accidente</div>
+              <div class="metric-icon verde">
+                <i class="fas fa-shield-check"></i>
+              </div>
+            </div>
+            <div class="metric-value">187</div>
+            <div class="metric-trend pos">
+              <i class="fas fa-arrow-up"></i> récord: 210
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <div class="metric-label">Capacitaciones</div>
+              <div class="metric-icon naranja">
+                <i class="fas fa-graduation-cap"></i>
+              </div>
+            </div>
+            <div class="metric-value">16</div>
+            <div class="metric-trend">
+              <i class="fas fa-calendar"></i> 4 programadas
+            </div>
+          </div>
+        </div>
+
+        <div class="placeholder-panel">
+          <div class="hint">Vista general</div>
+          <p><strong>Indicadores clave</strong> · Seleccione una sección del menú lateral para ver detalles específicos.</p>
+          <p style="margin-top: 14px; font-size: 0.82rem;">Última actualización: 13 de marzo 2026</p>
+        </div>
+      `;
+
+      // Limpiar el estado "activo" de todos los items
+      document.querySelectorAll('.nav-main-item').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.submenu li a').forEach(a => {
+        a.classList.remove('active');
+        a.style.background = '';
+        a.style.color = '';
+      });
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagrama de Ishikawa · Investigación de Accidentes</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  * { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --azul-primario: #1e2b3c;
+    --azul-secundario: #2c3e50;
+    --azul-terciario: #3d5c7a;
+    --azul-acento: #3498db;
+    --gris-fondo: #f5f7fa;
+    --gris-borde: #e5eaf0;
+    --gris-texto: #5f6f80;
+    --blanco: #ffffff;
+    --verde: #27ae60;
+    --naranja: #e67e22;
+    --rojo: #e74c3c;
+    --sombra-suave: 0 2px 8px rgba(30, 43, 60, 0.04);
+    --sombra-media: 0 8px 24px rgba(30, 43, 60, 0.08);
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--gris-fondo);
+    color: var(--azul-primario);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body { padding: 20px; }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* ===== HEADER ===== */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .page-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .page-title .icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.3rem;
+    box-shadow: 0 6px 16px rgba(231, 76, 60, 0.3);
+    flex-shrink: 0;
+  }
+
+  .page-title h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--azul-primario);
+    margin: 0;
+    letter-spacing: -0.4px;
+  }
+
+  .page-title .subtitle {
+    font-size: 0.85rem;
+    color: var(--gris-texto);
+    margin-top: 2px;
+  }
+
+  .badge-metodologia {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: rgba(231, 76, 60, 0.12);
+    color: #c0392b;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* ===== CARD BASE ===== */
+  .card {
+    background: var(--blanco);
+    border-radius: 16px;
+    border: 1px solid var(--gris-borde);
+    box-shadow: var(--sombra-suave);
+    padding: 22px 26px;
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--azul-primario);
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--gris-borde);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+
+  .card-title i {
+    color: var(--azul-acento);
+    font-size: 1rem;
+  }
+
+  /* ===== PROBLEMA ===== */
+  .problema-section {
+    background: linear-gradient(135deg, #eaf4fd 0%, #f0f7fd 100%);
+    border: 1.5px solid rgba(52, 152, 219, 0.3);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .problema-section label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--gris-texto);
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .problema-section label i {
+    color: var(--azul-acento);
+  }
+
+  .problema-input {
+    width: 100%;
+    border: 1.5px solid var(--azul-acento);
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--azul-primario);
+    background: var(--blanco);
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .problema-input:focus {
+    outline: none;
+    border-color: #2980b9;
+    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.15);
+  }
+
+  /* ===== CATEGORÍAS GRID ===== */
+  .categorias-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    margin-bottom: 24px;
+  }
+
+  .category-card {
+    background: var(--blanco);
+    border-radius: 14px;
+    border: 1px solid var(--gris-borde);
+    box-shadow: var(--sombra-suave);
+    overflow: hidden;
+    transition: all 0.2s ease;
+  }
+
+  .category-card:hover {
+    box-shadow: var(--sombra-media);
+    transform: translateY(-2px);
+  }
+
+  .category-header {
+    padding: 12px 18px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .category-header i {
+    font-size: 1rem;
+  }
+
+  .category-header.metodo { background: linear-gradient(135deg, #1e2b3c 0%, #2c3e50 100%); }
+  .category-header.mano { background: linear-gradient(135deg, #2980b9 0%, #3498db 100%); }
+  .category-header.maquina { background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%); }
+  .category-header.material { background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); }
+  .category-header.ambiente { background: linear-gradient(135deg, #e67e22 0%, #f39c12 100%); }
+  .category-header.medicion { background: linear-gradient(135deg, #16a085 0%, #1abc9c 100%); }
+
+  .category-body {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* ===== CAUSA ITEM ===== */
+  .causa-item {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .causa-item input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1.5px solid var(--gris-borde);
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    background: var(--gris-fondo);
+    color: var(--azul-primario);
+    transition: all 0.2s;
+    min-width: 0;
+  }
+
+  .causa-item input:focus {
+    outline: none;
+    border-color: var(--azul-acento);
+    background: var(--blanco);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  }
+
+  .btn-add,
+  .btn-remove {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .btn-add {
+    background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+    color: white;
+    box-shadow: 0 4px 10px rgba(39, 174, 96, 0.25);
+  }
+  .btn-add:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 14px rgba(39, 174, 96, 0.35);
+  }
+
+  .btn-remove {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    box-shadow: 0 4px 10px rgba(231, 76, 60, 0.25);
+  }
+  .btn-remove:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 14px rgba(231, 76, 60, 0.35);
+  }
+
+  /* ===== BOTONES ===== */
+  .action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 24px 0;
+  }
+
+  .btn {
+    border: none;
+    padding: 13px 28px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .btn-pdf {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    box-shadow: 0 4px 14px rgba(231, 76, 60, 0.3);
+  }
+  .btn-pdf:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+  }
+
+  .btn-reset {
+    background: var(--blanco);
+    color: var(--gris-texto);
+    border: 1.5px solid var(--gris-borde);
+  }
+  .btn-reset:hover {
+    background: #e9eef4;
+    border-color: #cbd5e1;
+    color: var(--azul-primario);
+  }
+
+  /* ===== VISTA PREVIA ===== */
+  .diagrama-container {
+    background: var(--blanco);
+    border-radius: 16px;
+    border: 1px solid var(--gris-borde);
+    box-shadow: var(--sombra-suave);
+    padding: 22px 26px;
+    margin-top: 24px;
+    display: none;
+  }
+
+  .diagrama-container.activo {
+    display: block;
+  }
+
+  .canvas-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    background: var(--gris-fondo);
+    border: 1px solid var(--gris-borde);
+    border-radius: 12px;
+    padding: 12px;
+  }
+
+  .diagrama-canvas {
+    display: block;
+    width: 1600px;
+    height: 800px;
+    background: white;
+    border-radius: 8px;
+  }
+
+  .canvas-hint {
+    font-size: 0.78rem;
+    color: var(--gris-texto);
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .canvas-hint i {
+    color: var(--azul-acento);
+  }
+
+  /* ===== FOOTER ===== */
+  .footer-card {
+    background: var(--blanco);
+    border-radius: 16px;
+    border: 1px solid var(--gris-borde);
+    box-shadow: var(--sombra-suave);
+    padding: 18px 24px;
+    text-align: center;
+    color: var(--gris-texto);
+    font-size: 0.85rem;
+    margin-top: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .footer-card i {
+    color: var(--rojo);
+  }
+
+  .footer-card .separator {
+    opacity: 0.3;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    body { padding: 12px; }
+    .page-title h1 { font-size: 1.15rem; }
+    .page-title .icon-box { width: 42px; height: 42px; font-size: 1.1rem; }
+    .categorias-grid { grid-template-columns: 1fr; gap: 14px; }
+    .card { padding: 18px; }
+    .problema-section { padding: 18px; }
+    .problema-input { font-size: 0.95rem; padding: 12px 14px; }
+    .action-buttons { flex-direction: column; }
+    .btn { width: 100%; }
+    .footer-card { flex-direction: column; gap: 6px; padding: 16px; }
+    .footer-card .separator { display: none; }
+  }
+
+  @media (max-width: 380px) {
+    .page-title h1 { font-size: 1rem; }
+    .badge-metodologia { font-size: 0.7rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="icon-box">
+        <i class="fas fa-diagram-project"></i>
+      </div>
+      <div>
+        <h1>Diagrama de Ishikawa</h1>
+        <div class="subtitle">Análisis de Causa Raíz · Investigación de Accidentes</div>
+      </div>
+    </div>
+    <div class="badge-metodologia">
+      <i class="fas fa-sitemap"></i> 6M
+    </div>
+  </div>
+
+  <!-- PROBLEMA PRINCIPAL -->
+  <div class="problema-section">
+    <label for="problema">
+      <i class="fas fa-bullseye"></i> Definir el Problema / Evento
+    </label>
+    <input type="text" class="problema-input" id="problema"
+           placeholder="Ej: Accidente en mina, Caída de persona, Falla de equipo..."
+           value="Accidente en área de trabajo">
+  </div>
+
+  <!-- CATEGORÍAS 6M -->
+  <div class="categorias-grid">
+
+    <!-- MÉTODO -->
+    <div class="category-card">
+      <div class="category-header metodo">
+        <i class="fas fa-clipboard-list"></i> Método
+      </div>
+      <div class="category-body" id="metodo-container">
+        <div class="causa-item">
+          <input type="text" placeholder="Ej: Procedimiento inadecuado">
+          <button class="btn-add" onclick="agregarCausa('metodo')" title="Agregar"><i class="fas fa-plus"></i></button>
+        </div>
+        <div class="causa-item">
+          <input type="text" placeholder="Ej: Falta de instructivos">
+          <button class="btn-add" onclick="agregarCausa('metodo')" title="Agregar"><i class="fas fa-plus"></i></button>
+        </div>
+        <div class="causa-item">
+          <input type="text" placeholder="Ej: Procedimiento no actualizado">
+          <button class="btn-add" onclick="agregarCausa('metodo')" title="Agregar"><i class="fas fa-plus"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MANO DE OBRA -->
+    <div class="category-card">
+      <div class="category-header mano">
+        <i class="fas fa-user-hard-hat"></i> Mano de Obra
+      </div>
+      <div class="category-body" id="mano-container">
+        <div class="causa-item">
+          <input type="text" placeholder="Ej: Falta de capacitación">
+          <button class="btn-add" onclick="agregarCausa('mano')" title="Agregar"><i class="fas fa-plus"></i></button>
+        </div>
+        <div class="causa-item">
+          <input type="text" placeholder="Ej: Fatiga del trabajador">
+          <button class="btn-add" onclick="agregarCausa('mano')" title="Agregar"><i class="fas fa-plus"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAQUINARIA -->
+    <div class="category-card">
+      <div class="category-header maquina">
+        <i class="fas fa-gear"></i> Maquinaria
+      </div>
+      <div class="category-body" id="maquina-container">
+        <div class="causa-item">
+          <input type="text" placeholder="Ej: Equipo defectuoso">
+          <button class="btn-add" onclick="agregarCausa('maquina')" title="Agregar"><i class="fas fa-plus"></i></button>
+        </div>
+        <div class="causa-item">
+          <input type="text" placeholder="Ej: Falta de mantenimiento">
+          <button class="btn-add" onclick="agregarCausa('maquina')" title="Agregar"><i class="fas fa-plus"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MATERIAL -->
+    <div class="category-card">
+      <div class="category-header material">
+        <i class="fas fa-boxes"></i> Material
+      </div>
+      <div class="category-body" id="material-container">
+        <div class="causa-item">
+          <input type="text" placeholder="Ej: Material defectuoso">
+          <button class="btn-add" onclick="agregarCausa('material')" title="Agregar"><i class="fas fa-plus"></i></button>
+        </div>
+        <div class="causa-item">
+          <input type="text" placeholder="Ej: Insumos de baja calidad">
+          <button class="btn-add" onclick="agregarCausa('material')" title="Agregar"><i class="fas fa-plus"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEDIO AMBIENTE -->
+    <div class="category-card">
+      <div class="category-header ambiente">
+        <i class="fas fa-cloud-sun"></i> Medio Ambiente
+      </div>
+      <div class="category-body" id="ambiente-container">
+        <div class="causa-item">
+          <input type="text" placeholder="Ej: Iluminación deficiente">
+          <button class="btn-add" onclick="agregarCausa('ambiente')" title="Agregar"><i class="fas fa-plus"></i></button>
+        </div>
+        <div class="causa-item">
+          <input type="text" placeholder="Ej: Ruido excesivo">
+          <button class="btn-add" onclick="agregarCausa('ambiente')" title="Agregar"><i class="fas fa-plus"></i></button>
+        </div>
+        <div class="causa-item">
+          <input type="text" placeholder="Ej: Temperatura extrema">
+          <button class="btn-add" onclick="agregarCausa('ambiente')" title="Agregar"><i class="fas fa-plus"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEDICIÓN -->
+    <div class="category-card">
+      <div class="category-header medicion">
+        <i class="fas fa-ruler"></i> Medición
+      </div>
+      <div class="category-body" id="medicion-container">
+        <div class="causa-item">
+          <input type="text" placeholder="Ej: Falta de indicadores">
+          <button class="btn-add" onclick="agregarCausa('medicion')" title="Agregar"><i class="fas fa-plus"></i></button>
+        </div>
+        <div class="causa-item">
+          <input type="text" placeholder="Ej: Medición incorrecta">
+          <button class="btn-add" onclick="agregarCausa('medicion')" title="Agregar"><i class="fas fa-plus"></i></button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTONES -->
+  <div class="action-buttons">
+    <button class="btn btn-pdf" onclick="generarPDF()" id="btnPDF">
+      <i class="fas fa-file-pdf"></i> Generar Diagrama PDF
+    </button>
+    <button class="btn btn-reset" onclick="resetearTodo()">
+      <i class="fas fa-undo-alt"></i> Reiniciar
+    </button>
+  </div>
+
+  <!-- VISTA PREVIA -->
+  <div class="diagrama-container" id="diagrama-preview">
+    <div class="card-title" style="margin-bottom:20px;">
+      <i class="fas fa-eye"></i>
+      Vista Previa del Diagrama
+    </div>
+    <div class="canvas-wrapper">
+      <canvas id="fishboneCanvas" class="diagrama-canvas" width="1600" height="800"></canvas>
+    </div>
+    <div class="canvas-hint">
+      <i class="fas fa-info-circle"></i>
+      Alta resolución · Desliza horizontalmente si es necesario
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer-card">
+    <span><i class="fas fa-envelope"></i> Soporte@prosering.com</span>
+    <span class="separator">·</span>
+    <span><i class="fas fa-sitemap"></i> Ishikawa · 6M</span>
+  </div>
+
+</div>
+
+<script>
+  /* ============================================
+     AGREGAR / ELIMINAR CAUSAS
+     ============================================ */
+  function agregarCausa(categoria) {
+    const container = document.getElementById(categoria + '-container');
+    const nuevoItem = document.createElement('div');
+    nuevoItem.className = 'causa-item';
+    nuevoItem.innerHTML = `
+      <input type="text" placeholder="Nueva causa...">
+      <button class="btn-remove" onclick="eliminarCausa(this)" title="Eliminar"><i class="fas fa-times"></i></button>
+      <button class="btn-add" onclick="agregarCausa('${categoria}')" title="Agregar"><i class="fas fa-plus"></i></button>
+    `;
+    container.appendChild(nuevoItem);
+    // Focus en el nuevo input
+    const nuevoInput = nuevoItem.querySelector('input');
+    if (nuevoInput) nuevoInput.focus();
+  }
+
+  function eliminarCausa(boton) {
+    const item = boton.closest('.causa-item');
+    if (item && item.parentElement.children.length > 1) {
+      item.style.transition = 'all 0.2s';
+      item.style.opacity = '0';
+      item.style.transform = 'translateX(-20px)';
+      setTimeout(() => item.remove(), 200);
+    } else {
+      alert('Debe haber al menos una causa por categoría');
+    }
+  }
+
+  function resetearTodo() {
+    if (confirm('¿Está seguro de reiniciar todas las causas?')) {
+      location.reload();
+    }
+  }
+
+  /* ============================================
+     DIBUJAR DIAGRAMA ESPINA DE PESCADO
+     ============================================ */
+  function dibujarDiagrama(ctx, width, height, problema, causas) {
+    const scaleX = width / 800;
+    const scaleY = height / 400;
+
+    ctx.clearRect(0, 0, width, height);
+
+    ctx.strokeStyle = '#1e2b3c';
+    ctx.lineWidth = 3 * scaleX;
+    ctx.fillStyle = '#1e2b3c';
+    ctx.font = `bold ${14 * scaleX}px Inter, Arial`;
+
+    // Línea principal (espina)
+    ctx.beginPath();
+    ctx.moveTo(100 * scaleX, height / 2);
+    ctx.lineTo(width - 100 * scaleX, height / 2);
+    ctx.stroke();
+
+    // Flecha de la cabeza
+    ctx.beginPath();
+    ctx.moveTo(width - 100 * scaleX, height / 2 - 10 * scaleY);
+    ctx.lineTo(width - 70 * scaleX, height / 2);
+    ctx.lineTo(width - 100 * scaleX, height / 2 + 10 * scaleY);
+    ctx.fillStyle = '#e74c3c';
+    ctx.fill();
+
+    // Caja del problema
+    ctx.fillStyle = '#e74c3c';
+    ctx.fillRect(width - 180 * scaleX, height / 2 - 30 * scaleY, 100 * scaleX, 60 * scaleY);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2 * scaleX;
+    ctx.strokeRect(width - 180 * scaleX, height / 2 - 30 * scaleY, 100 * scaleX, 60 * scaleY);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${12 * scaleX}px Inter, Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    const palabras = problema.split(' ');
+    let lineas = [];
+    let lineaActual = '';
+
+    for (let palabra of palabras) {
+      if ((lineaActual + ' ' + palabra).length < 20) {
+        lineaActual += (lineaActual ? ' ' : '') + palabra;
+      } else {
+        if (lineaActual) lineas.push(lineaActual);
+        lineaActual = palabra;
+      }
+    }
+    if (lineaActual) lineas.push(lineaActual);
+
+    for (let i = 0; i < lineas.length; i++) {
+      ctx.fillText(lineas[i], width - 130 * scaleX, height / 2 - 15 * scaleY + (i * 15 * scaleY));
+    }
+
+    const categorias = [
+      { nombre: 'MÉTODO', x: 150 * scaleX, causas: causas.metodo },
+      { nombre: 'MANO DE OBRA', x: 250 * scaleX, causas: causas.mano },
+      { nombre: 'MAQUINARIA', x: 350 * scaleX, causas: causas.maquina },
+      { nombre: 'MATERIAL', x: 450 * scaleX, causas: causas.material },
+      { nombre: 'MEDIO AMBIENTE', x: 550 * scaleX, causas: causas.ambiente },
+      { nombre: 'MEDICIÓN', x: 650 * scaleX, causas: causas.medicion }
+    ];
+
+    categorias.forEach((cat, index) => {
+      const yOffset = index % 2 === 0 ? -50 * scaleY : 50 * scaleY;
+
+      ctx.beginPath();
+      ctx.strokeStyle = '#3d5c7a';
+      ctx.lineWidth = 2 * scaleX;
+      ctx.moveTo(cat.x, height / 2);
+      ctx.lineTo(cat.x - 30 * scaleX, height / 2 + yOffset);
+      ctx.stroke();
+
+      ctx.fillStyle = '#1e2b3c';
+      ctx.fillRect(cat.x - 70 * scaleX, height / 2 + yOffset - 20 * scaleY, 100 * scaleX, 40 * scaleY);
+      ctx.strokeStyle = '#ffffff';
+      ctx.strokeRect(cat.x - 70 * scaleX, height / 2 + yOffset - 20 * scaleY, 100 * scaleX, 40 * scaleY);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${10 * scaleX}px Inter, Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(cat.nombre, cat.x - 20 * scaleX, height / 2 + yOffset);
+
+      if (cat.causas && cat.causas.length > 0) {
+        let startY = height / 2 + yOffset + (yOffset > 0 ? 30 * scaleY : -60 * scaleY);
+        let direction = yOffset > 0 ? 1 : -1;
+
+        cat.causas.forEach((causa, i) => {
+          if (causa && causa.trim()) {
+            const causaY = startY + (i * 15 * scaleY * direction);
+
+            ctx.beginPath();
+            ctx.strokeStyle = '#8fa3b8';
+            ctx.lineWidth = 1 * scaleX;
+            ctx.setLineDash([5 * scaleX, 3 * scaleX]);
+            ctx.moveTo(cat.x - 20 * scaleX, height / 2 + yOffset);
+            ctx.lineTo(cat.x - 30 * scaleX, causaY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = '#5f6f80';
+            ctx.font = `${9 * scaleX}px Inter, Arial`;
+            ctx.fillText(causa.length > 20 ? causa.substring(0, 18) + '...' : causa, cat.x - 40 * scaleX, causaY);
+          }
+        });
+      }
+    });
+  }
+
+  /* ============================================
+     RECOPILAR CAUSAS
+     ============================================ */
+  function recopilarCausas() {
+    const causas = {
+      metodo: [],
+      mano: [],
+      maquina: [],
+      material: [],
+      ambiente: [],
+      medicion: []
+    };
+
+    Object.keys(causas).forEach(cat => {
+      document.querySelectorAll(`#${cat}-container .causa-item input`).forEach(input => {
+        if (input.value.trim()) causas[cat].push(input.value.trim());
+      });
+    });
+
+    return causas;
+  }
+
+  /* ============================================
+     GENERAR PDF
+     ============================================ */
+  async function generarPDF() {
+    const btn = document.getElementById('btnPDF');
+    const textoOriginal = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Generando PDF...';
+    btn.disabled = true;
+
+    try {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('l', 'mm', 'a4');
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const problema = document.getElementById('problema').value || 'Problema no definido';
+      const causas = recopilarCausas();
+
+      // Encabezado
+      pdf.setFillColor(30, 43, 60);
+      pdf.rect(0, 0, pageWidth, 25, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('DIAGRAMA DE ISHIKAWA · 6M', 15, 17);
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Generado: ${new Date().toLocaleString()}`, pageWidth - 55, 17);
+
+      // Evento
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('EVENTO:', 15, 40);
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(problema, 60, 40);
+
+      // Canvas alta resolución
+      const canvas = document.createElement('canvas');
+      canvas.width = 1600;
+      canvas.height = 800;
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      dibujarDiagrama(ctx, canvas.width, canvas.height, problema, causas);
+
+      const imgData = canvas.toDataURL('image/png', 1.0);
+      pdf.addImage(imgData, 'PNG', 10, 50, pageWidth - 20, 130);
+
+      // Listado
+      let yPos = 190;
+      pdf.setFillColor(44, 62, 80);
+      pdf.rect(10, yPos - 5, pageWidth - 20, 10, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('ANÁLISIS DE CAUSAS POR CATEGORÍA', 15, yPos);
+
+      yPos += 15;
+      pdf.setTextColor(0, 0, 0);
+
+      const categorias = [
+        { nombre: 'MÉTODO', causas: causas.metodo, color: [30, 43, 60] },
+        { nombre: 'MANO DE OBRA', causas: causas.mano, color: [52, 152, 219] },
+        { nombre: 'MAQUINARIA', causas: causas.maquina, color: [231, 76, 60] },
+        { nombre: 'MATERIAL', causas: causas.material, color: [39, 174, 96] },
+        { nombre: 'MEDIO AMBIENTE', causas: causas.ambiente, color: [230, 126, 34] },
+        { nombre: 'MEDICIÓN', causas: causas.medicion, color: [26, 188, 156] }
+      ];
+
+      pdf.setFontSize(9);
+      categorias.forEach((cat, index) => {
+        const col = index % 2 === 0 ? 15 : pageWidth / 2 + 5;
+        const row = Math.floor(index / 2);
+        const y = yPos + (row * 40);
+
+        pdf.setFillColor(...cat.color);
+        pdf.rect(col, y - 3, 5, 5, 'F');
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(cat.nombre, col + 10, y);
+
+        pdf.setFont('helvetica', 'normal');
+        if (cat.causas.length > 0) {
+          const causasText = cat.causas.join(' • ');
+          const lineas = pdf.splitTextToSize(causasText, pageWidth / 2 - 30);
+          pdf.text(lineas, col + 10, y + 5);
+        } else {
+          pdf.text('Sin causas registradas', col + 10, y + 5);
+        }
+      });
+
+      pdf.save(`Ishikawa_${new Date().toISOString().slice(0, 10)}.pdf`);
+
+      // Vista previa en pantalla
+      document.getElementById('diagrama-preview').classList.add('activo');
+      const previewCanvas = document.getElementById('fishboneCanvas');
+      const previewCtx = previewCanvas.getContext('2d');
+      dibujarDiagrama(previewCtx, previewCanvas.width, previewCanvas.height, problema, causas);
+
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al generar el PDF: ' + error.message);
+    } finally {
+      btn.innerHTML = textoOriginal;
+      btn.disabled = false;
+    }
+  }
+
+  /* ============================================
+     VISTA PREVIA INICIAL
+     ============================================ */
+  window.addEventListener('load', function() {
+    const canvas = document.getElementById('fishboneCanvas');
+    const ctx = canvas.getContext('2d');
+    const problema = document.getElementById('problema').value;
+
+    const causas = recopilarCausas();
+    dibujarDiagrama(ctx, canvas.width, canvas.height, problema, causas);
+    document.getElementById('diagrama-preview').classList.add('activo');
+  });
+</script>
+
+</body>
+</html>

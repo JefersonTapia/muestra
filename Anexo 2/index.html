@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCAT · Análisis Sistemático de Causas</title>
+
+<!-- SignaturePad -->
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  * { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --azul-primario: #1e2b3c;
+    --azul-secundario: #2c3e50;
+    --azul-terciario: #3d5c7a;
+    --azul-acento: #3498db;
+    --gris-fondo: #f5f7fa;
+    --gris-borde: #e5eaf0;
+    --gris-texto: #5f6f80;
+    --blanco: #ffffff;
+    --verde: #27ae60;
+    --naranja: #e67e22;
+    --rojo: #e74c3c;
+    --rojo-suave: #fef2f2;
+    --sombra-suave: 0 2px 8px rgba(30, 43, 60, 0.04);
+    --sombra-media: 0 8px 24px rgba(30, 43, 60, 0.08);
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--gris-fondo);
+    color: var(--azul-primario);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body { padding: 20px; }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* ===== HEADER ===== */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .page-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .page-title .icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.3rem;
+    box-shadow: 0 6px 16px rgba(192, 57, 43, 0.3);
+    flex-shrink: 0;
+  }
+
+  .page-title h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--azul-primario);
+    margin: 0;
+    letter-spacing: -0.4px;
+  }
+
+  .page-title .subtitle {
+    font-size: 0.85rem;
+    color: var(--gris-texto);
+    margin-top: 2px;
+  }
+
+  .badge-version {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: rgba(192, 57, 43, 0.12);
+    color: #c0392b;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* ===== CARD BASE ===== */
+  .card {
+    background: var(--blanco);
+    border-radius: 16px;
+    border: 1px solid var(--gris-borde);
+    box-shadow: var(--sombra-suave);
+    padding: 22px 26px;
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--azul-primario);
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--gris-borde);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+
+  .card-title i {
+    color: var(--azul-acento);
+    font-size: 1rem;
+  }
+
+  .card-title .num {
+    background: var(--azul-primario);
+    color: white;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* ===== FIELD GRID ===== */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field-group label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--gris-texto);
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .field-group label i {
+    color: var(--azul-acento);
+    font-size: 0.75rem;
+  }
+
+  .field-group input,
+  .field-group select,
+  .field-group textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--gris-borde);
+    border-radius: 12px;
+    font-size: 0.88rem;
+    font-family: inherit;
+    background: var(--gris-fondo);
+    color: var(--azul-primario);
+    transition: all 0.2s;
+  }
+
+  .field-group input:focus,
+  .field-group select:focus,
+  .field-group textarea:focus {
+    outline: none;
+    border-color: var(--azul-acento);
+    background: var(--blanco);
+    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+  }
+
+  /* ===== CHECKBOX GRID ===== */
+  .checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 8px;
+    padding: 16px;
+    background: var(--gris-fondo);
+    border-radius: 12px;
+    border: 1px solid var(--gris-borde);
+  }
+
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--blanco);
+    border-radius: 10px;
+    border: 1px solid var(--gris-borde);
+    font-size: 0.82rem;
+    color: var(--azul-primario);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+
+  .checkbox-item:hover {
+    border-color: var(--azul-acento);
+    background: #f0f7fd;
+  }
+
+  .checkbox-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--azul-acento);
+    cursor: pointer;
+    flex-shrink: 0;
+    margin: 0;
+  }
+
+  .checkbox-item.checked {
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.1) 0%, rgba(52, 152, 219, 0.05) 100%);
+    border-color: var(--azul-acento);
+    font-weight: 600;
+  }
+
+  .checkbox-item label {
+    cursor: pointer;
+    flex: 1;
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  /* ===== SELECTS GRID 2 ===== */
+  .select-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  /* ===== SIGNATURE ===== */
+  .signature-container {
+    border: 1.5px dashed var(--gris-borde);
+    border-radius: 12px;
+    padding: 12px;
+    background: var(--blanco);
+    transition: border-color 0.2s;
+  }
+
+  .signature-container:hover {
+    border-color: var(--azul-acento);
+  }
+
+  .signature-canvas {
+    width: 100%;
+    height: 150px;
+    background: var(--gris-fondo);
+    border-radius: 8px;
+    touch-action: none;
+    display: block;
+  }
+
+  .firma-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--azul-primario);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .firma-label i {
+    color: var(--azul-acento);
+  }
+
+  /* ===== BOTONES ===== */
+  .action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 24px 0;
+  }
+
+  .btn {
+    border: none;
+    padding: 13px 28px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .btn-pdf {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    box-shadow: 0 4px 14px rgba(231, 76, 60, 0.3);
+  }
+  .btn-pdf:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+  }
+
+  .btn-limpiar {
+    background: var(--gris-fondo);
+    color: var(--gris-texto);
+    border: 1.5px solid var(--gris-borde);
+    padding: 9px 18px;
+    font-size: 0.82rem;
+  }
+  .btn-limpiar:hover {
+    background: #e9eef4;
+    border-color: #cbd5e1;
+    color: var(--azul-primario);
+  }
+
+  /* ===== FOOTER ===== */
+  .footer-card {
+    background: var(--blanco);
+    border-radius: 16px;
+    border: 1px solid var(--gris-borde);
+    box-shadow: var(--sombra-suave);
+    padding: 18px 24px;
+    text-align: center;
+    color: var(--gris-texto);
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .footer-card i {
+    color: var(--rojo);
+  }
+
+  .footer-card .separator {
+    opacity: 0.3;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 992px) {
+    .info-grid { grid-template-columns: repeat(2, 1fr); }
+    .checkbox-grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 12px; }
+    .page-title h1 { font-size: 1.2rem; }
+    .page-title .icon-box { width: 42px; height: 42px; font-size: 1.1rem; }
+
+    .card { padding: 18px; }
+
+    .info-grid { grid-template-columns: 1fr; }
+    .select-grid-2 { grid-template-columns: 1fr; }
+
+    .checkbox-grid {
+      grid-template-columns: repeat(2, 1fr);
+      padding: 12px;
+      gap: 6px;
+    }
+
+    .checkbox-item {
+      padding: 6px 10px;
+      font-size: 0.78rem;
+    }
+
+    .action-buttons {
+      flex-direction: column;
+    }
+
+    .btn {
+      width: 100%;
+    }
+
+    .footer-card {
+      flex-direction: column;
+      gap: 6px;
+      padding: 16px;
+      font-size: 0.8rem;
+    }
+
+    .footer-card .separator { display: none; }
+  }
+
+  @media (max-width: 380px) {
+    .page-title h1 { font-size: 1rem; }
+    .checkbox-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="icon-box">
+        <i class="fas fa-shield-halved"></i>
+      </div>
+      <div>
+        <h1>SCAT · Análisis Sistemático de Causas</h1>
+        <div class="subtitle">Basic Root Cause Analysis Guide</div>
+      </div>
+    </div>
+    <div class="badge-version">
+      <i class="fas fa-clipboard-check"></i> v2.0
+    </div>
+  </div>
+
+  <!-- INFORMACIÓN DEL REPORTE -->
+  <div class="card">
+    <div class="card-title">
+      <i class="fas fa-clipboard-list"></i>
+      Información del Reporte
+    </div>
+    <div class="info-grid">
+      <div class="field-group">
+        <label><i class="fas fa-calendar-alt"></i> Fecha</label>
+        <input type="date" id="fechaReporte" value="2025-04-11">
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-building"></i> Área</label>
+        <input type="text" id="area" placeholder="Ej: Operaciones, Mina">
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-user-tie"></i> Supervisor</label>
+        <input type="text" id="supervisor" placeholder="Nombre del supervisor">
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-mountain"></i> Unidad Minera</label>
+        <select id="unidadMinera">
+          <option value="">-- Seleccione --</option>
+          <option value="Cerro Verde">Cerro Verde</option>
+          <option value="AngloAmerican">AngloAmerican</option>
+          <option value="HUDBAY">HUDBAY</option>
+          <option value="Marcobre">Marcobre</option>
+          <option value="Southern">Southern</option>
+          <option value="Antamina">Antamina</option>
+          <option value="Yanacocha">Yanacocha</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 1: PARTES DEL CUERPO -->
+  <div class="card">
+    <div class="card-title">
+      <span class="num">1</span>
+      <i class="fas fa-user-injured"></i>
+      Partes del Cuerpo Afectadas
+    </div>
+    <div class="checkbox-grid" id="gridPartes"></div>
+  </div>
+
+  <!-- SECCIÓN 2: NATURALEZA DE LA LESIÓN -->
+  <div class="card">
+    <div class="card-title">
+      <span class="num">2</span>
+      <i class="fas fa-notes-medical"></i>
+      Naturaleza de la Lesión
+    </div>
+    <div class="checkbox-grid" id="gridNaturaleza"></div>
+  </div>
+
+  <!-- SECCIÓN 3: CONTACTO Y MECANISMO -->
+  <div class="card">
+    <div class="card-title">
+      <span class="num">3</span>
+      <i class="fas fa-bolt"></i>
+      Contacto · Agencia y Mecanismo
+    </div>
+    <div class="select-grid-2">
+      <div class="field-group">
+        <label><i class="fas fa-cog"></i> Agencia Involucrada (única)</label>
+        <select id="agencia">
+          <option value="">-- Seleccione Agencia --</option>
+          <option value="3.1 Avión/Barco">3.1 Avión/Barco</option>
+          <option value="3.2 Animal/Fauna">3.2 Animal/Fauna</option>
+          <option value="3.3 Caldera">3.3 Caldera</option>
+          <option value="3.4 Construcción">3.4 Construcción</option>
+          <option value="3.5 Químicos">3.5 Químicos</option>
+          <option value="3.6 Contenedores">3.6 Contenedores</option>
+          <option value="3.7 Transportadoras">3.7 Transportadoras</option>
+          <option value="3.8 Polvo">3.8 Polvo</option>
+          <option value="3.9 Aparatos Eléctricos">3.9 Aparatos Eléctricos</option>
+          <option value="3.10 Ascensor">3.10 Ascensor</option>
+          <option value="3.11 Explosivo">3.11 Explosivo</option>
+          <option value="3.12 Pasarela">3.12 Pasarela</option>
+          <option value="3.13 Gases">3.13 Gases</option>
+          <option value="3.14 Herramientas Manuales">3.14 Herramientas Manuales</option>
+          <option value="3.15 Equipo Pesado">3.15 Equipo Pesado</option>
+          <option value="3.16 Calor/Inflamable">3.16 Calor/Inflamable</option>
+          <option value="3.17 Aparatos de Izaje">3.17 Aparatos de Izaje</option>
+          <option value="3.18 Instalación">3.18 Instalación</option>
+          <option value="3.19 Escaleras">3.19 Escaleras</option>
+          <option value="3.20 Vehículo Liviano">3.20 Vehículo Liviano</option>
+          <option value="3.21 Maquinaria">3.21 Maquinaria</option>
+          <option value="3.22 Material/Bienes">3.22 Material/Bienes</option>
+          <option value="3.23 Transmisión Mecánica">3.23 Transmisión Mecánica</option>
+          <option value="3.24 Obstrucción">3.24 Obstrucción</option>
+          <option value="3.25 Proyectil">3.25 Proyectil</option>
+          <option value="3.26 Radiación">3.26 Radiación</option>
+          <option value="3.27 Borde Cortante">3.27 Borde Cortante</option>
+          <option value="3.28 Tensión Suelo">3.28 Tensión Suelo</option>
+          <option value="3.29 Trabajos Superficie">3.29 Trabajos Superficie</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-fire"></i> Mecanismo de Lesión (única)</label>
+        <select id="mecanismo">
+          <option value="">-- Seleccione Mecanismo --</option>
+          <option value="4.1 Agravante">4.1 Agravante</option>
+          <option value="4.2 Mordedura/Picadura">4.2 Mordedura/Picadura</option>
+          <option value="4.3 Explosión">4.3 Explosión</option>
+          <option value="4.4 Reacción Física">4.4 Reacción Física</option>
+          <option value="4.5 Alcanzado (Pellizco)">4.5 Alcanzado</option>
+          <option value="4.6 Agarrado">4.6 Agarrado</option>
+          <option value="4.7 Atrapado">4.7 Atrapado</option>
+          <option value="4.8 Contacto con">4.8 Contacto con</option>
+          <option value="4.9 Exposición temperaturas">4.9 Exposición temperaturas</option>
+          <option value="4.10 Caída desde altura">4.10 Caída desde altura</option>
+          <option value="4.11 Caída mismo nivel">4.11 Caída mismo nivel</option>
+          <option value="4.12 Cuerpo extraño en ojo">4.12 Cuerpo extraño en ojo</option>
+          <option value="4.13 Inhalación">4.13 Inhalación</option>
+          <option value="4.14 Levantar/Tirar/Empujar">4.14 Levantar/Tirar/Empujar</option>
+          <option value="4.15 Sobre esfuerzo">4.15 Sobre esfuerzo</option>
+          <option value="4.16 Roce/Desgaste">4.16 Roce/Desgaste</option>
+          <option value="4.17 Descarga Eléctrica">4.17 Descarga Eléctrica</option>
+          <option value="4.18 Resbalón">4.18 Resbalón</option>
+          <option value="4.19 Golpear contra">4.19 Golpear contra</option>
+          <option value="4.20 Alcanzado por objeto">4.20 Alcanzado por objeto</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 4: CAUSAS INMEDIATAS -->
+  <div class="card">
+    <div class="card-title">
+      <span class="num">4</span>
+      <i class="fas fa-exclamation-triangle"></i>
+      Causas Inmediatas
+    </div>
+    <div class="select-grid-2">
+      <div class="field-group">
+        <label><i class="fas fa-user-xmark"></i> Prácticas Sub-estándar (única)</label>
+        <select id="practica">
+          <option value="">-- Seleccione Práctica --</option>
+          <option value="5.1 Falla en seguir procedimiento">5.1 Falla en seguir procedimiento</option>
+          <option value="5.2 Inspección inadecuada">5.2 Inspección inadecuada</option>
+          <option value="5.3 Inspección pre-operativa inadecuada">5.3 Inspección pre-operativa inadecuada</option>
+          <option value="5.4 Evaluación riesgo incorrecta">5.4 Evaluación riesgo incorrecta</option>
+          <option value="5.5 No iniciar acción correctiva">5.5 No iniciar acción correctiva</option>
+          <option value="5.6 Proceder sin autoridad">5.6 Proceder sin autoridad</option>
+          <option value="5.7 Falla en alertar">5.7 Falla en alertar</option>
+          <option value="5.8 Falla de seguridad">5.8 Falla de seguridad</option>
+          <option value="5.9 Velocidad inapropiada">5.9 Velocidad inapropiada</option>
+          <option value="5.10 Quitar elementos seguridad">5.10 Quitar elementos seguridad</option>
+          <option value="5.11 Equipo defectuoso">5.11 Equipo defectuoso</option>
+          <option value="5.12 Uso inapropiado equipo">5.12 Uso inapropiado equipo</option>
+          <option value="5.13 Defecto en uso EPP">5.13 Defecto en uso EPP</option>
+          <option value="5.14 Carga incorrecta">5.14 Carga incorrecta</option>
+          <option value="5.15 Ubicación incorrecta">5.15 Ubicación incorrecta</option>
+          <option value="5.16 Levantar indebidamente">5.16 Levantar indebidamente</option>
+          <option value="5.17 Posición inadecuada">5.17 Posición inadecuada</option>
+          <option value="5.18 Acción temeraria">5.18 Acción temeraria</option>
+          <option value="5.19 Alcohol/drogas">5.19 Alcohol/drogas</option>
+          <option value="5.20 Incapacitado">5.20 Incapacitado</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-triangle-exclamation"></i> Condiciones Sub-estándar (única)</label>
+        <select id="condicion">
+          <option value="">-- Seleccione Condición --</option>
+          <option value="6.1 Guardias inadecuadas">6.1 Guardias inadecuadas</option>
+          <option value="6.2 EPP inadecuado">6.2 EPP inadecuado</option>
+          <option value="6.3 Equipos defectuosos">6.3 Equipos defectuosos</option>
+          <option value="6.4 Congestión">6.4 Congestión</option>
+          <option value="6.5 Sistema advertencia inadecuado">6.5 Sistema advertencia inadecuado</option>
+          <option value="6.6 Incendio/Explosión">6.6 Incendio/Explosión</option>
+          <option value="6.7 Falta aseo">6.7 Falta aseo</option>
+          <option value="6.8 Condiciones ambientales peligrosas">6.8 Condiciones ambientales</option>
+          <option value="6.9 Exposición ruido">6.9 Exposición ruido</option>
+          <option value="6.10 Exposición radiación">6.10 Exposición radiación</option>
+          <option value="6.11 Temperaturas extremas">6.11 Temperaturas extremas</option>
+          <option value="6.12 Iluminación inadecuada">6.12 Iluminación inadecuada</option>
+          <option value="6.13 Ventilación inadecuada">6.13 Ventilación inadecuada</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 5: FACTOR PERSONAL -->
+  <div class="card">
+    <div class="card-title">
+      <span class="num">5</span>
+      <i class="fas fa-user"></i>
+      Factor Personal (SCAT)
+    </div>
+    <div class="select-grid-2">
+      <div class="field-group">
+        <label><i class="fas fa-1"></i> Opción 1</label>
+        <select id="opcionfp1">
+          <option value="">-- Seleccione Factor Personal --</option>
+          <option value="FP-01">7.1 CAPACIDAD FÍSICA INADECUADA</option>
+          <option value="FP-02">7.2 CAPACIDAD MENTAL DEFICIENTE</option>
+          <option value="FP-03">7.3 ESTRÉS FÍSICO</option>
+          <option value="FP-04">7.4 ESTRÉS MENTAL</option>
+          <option value="FP-05">7.5 FALTA DE CONOCIMIENTO</option>
+          <option value="FP-06">7.6 FALTA DE APTITUDES</option>
+          <option value="FP-07">7.7 MOTIVACIÓN INCORRECTA</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-list"></i> Subgrupo 1</label>
+        <select id="subgrupofp1">
+          <option value="">-- Seleccione subgrupo --</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-2"></i> Opción 2 (opcional)</label>
+        <select id="opcionfp2">
+          <option value="">-- Seleccione Factor Personal --</option>
+          <option value="FP-01">7.1 CAPACIDAD FÍSICA INADECUADA</option>
+          <option value="FP-02">7.2 CAPACIDAD MENTAL DEFICIENTE</option>
+          <option value="FP-03">7.3 ESTRÉS FÍSICO</option>
+          <option value="FP-04">7.4 ESTRÉS MENTAL</option>
+          <option value="FP-05">7.5 FALTA DE CONOCIMIENTO</option>
+          <option value="FP-06">7.6 FALTA DE APTITUDES</option>
+          <option value="FP-07">7.7 MOTIVACIÓN INCORRECTA</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-list"></i> Subgrupo 2</label>
+        <select id="subgrupofp2">
+          <option value="">-- Seleccione subgrupo --</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 6: FACTOR DE TRABAJO -->
+  <div class="card">
+    <div class="card-title">
+      <span class="num">6</span>
+      <i class="fas fa-hard-hat"></i>
+      Factor de Trabajo (SCAT)
+    </div>
+    <div class="select-grid-2">
+      <div class="field-group">
+        <label><i class="fas fa-1"></i> Opción 1</label>
+        <select id="opcion1">
+          <option value="">-- Seleccione Factor Trabajo --</option>
+          <option value="FT-01">8.1 LIDERAZGO INADECUADO</option>
+          <option value="FT-02">8.2 INGENIERÍA INADECUADA</option>
+          <option value="FT-03">8.3 COMPRAS INCORRECTAS</option>
+          <option value="FT-04">8.4 MANTENCIÓN INADECUADA</option>
+          <option value="FT-05">8.5 HERRAMIENTAS INADECUADAS</option>
+          <option value="FT-06">8.6 ESTÁNDARES INADECUADOS</option>
+          <option value="FT-07">8.7 DESGASTE</option>
+          <option value="FT-08">8.8 ABUSO/MAL USO</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-list"></i> Subgrupo 1</label>
+        <select id="subgrupo1">
+          <option value="">-- Seleccione subgrupo --</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-2"></i> Opción 2 (opcional)</label>
+        <select id="opcion2">
+          <option value="">-- Seleccione Factor Trabajo --</option>
+          <option value="FT-01">8.1 LIDERAZGO INADECUADO</option>
+          <option value="FT-02">8.2 INGENIERÍA INADECUADA</option>
+          <option value="FT-03">8.3 COMPRAS INCORRECTAS</option>
+          <option value="FT-04">8.4 MANTENCIÓN INADECUADA</option>
+          <option value="FT-05">8.5 HERRAMIENTAS INADECUADAS</option>
+          <option value="FT-06">8.6 ESTÁNDARES INADECUADOS</option>
+          <option value="FT-07">8.7 DESGASTE</option>
+          <option value="FT-08">8.8 ABUSO/MAL USO</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-list"></i> Subgrupo 2</label>
+        <select id="subgrupo2">
+          <option value="">-- Seleccione subgrupo --</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 7: CONTROL DE GERENCIA -->
+  <div class="card">
+    <div class="card-title">
+      <span class="num">7</span>
+      <i class="fas fa-chart-line"></i>
+      Control de Gerencia
+    </div>
+    <div class="select-grid-2">
+      <div class="field-group">
+        <label><i class="fas fa-1"></i> Opción 1</label>
+        <select id="opcioncg1">
+          <option value="">-- Seleccione Control --</option>
+          <option value="CG-01">9.1 DESARROLLO DEL EMPLEADO</option>
+          <option value="CG-02">9.2 ACCOUNTABILITY</option>
+          <option value="CG-03">9.3 MANEJO DE RIESGO/CAMBIO</option>
+          <option value="CG-04">9.4 COMUNICACIONES</option>
+          <option value="CG-05">9.5 INSPECCIONES/AUDITORÍAS</option>
+          <option value="CG-06">9.6 PREPARACIÓN EMERGENCIAS</option>
+          <option value="CG-07">9.7 POLÍTICAS/INSTRUCCIONES</option>
+          <option value="CG-08">9.8 MANEJO CONTRATISTAS</option>
+          <option value="CG-09">9.9 INGENIERÍA/DISEÑO</option>
+          <option value="CG-10">9.10 OPERACIONES/MANTENCIÓN</option>
+          <option value="CG-11">9.11 SALUD OCUPACIONAL</option>
+          <option value="CG-12">9.12 ERGONOMÍA</option>
+          <option value="CG-13">9.13 RECURSOS HUMANOS</option>
+          <option value="CG-14">9.14 MEDIOAMBIENTE</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-list"></i> Subgrupo 1</label>
+        <select id="subgrupocg1">
+          <option value="">-- Seleccione subgrupo --</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-2"></i> Opción 2 (opcional)</label>
+        <select id="opcioncg2">
+          <option value="">-- Seleccione Control --</option>
+          <option value="CG-01">9.1 DESARROLLO DEL EMPLEADO</option>
+          <option value="CG-02">9.2 ACCOUNTABILITY</option>
+          <option value="CG-03">9.3 MANEJO DE RIESGO/CAMBIO</option>
+          <option value="CG-04">9.4 COMUNICACIONES</option>
+          <option value="CG-05">9.5 INSPECCIONES/AUDITORÍAS</option>
+          <option value="CG-06">9.6 PREPARACIÓN EMERGENCIAS</option>
+          <option value="CG-07">9.7 POLÍTICAS/INSTRUCCIONES</option>
+          <option value="CG-08">9.8 MANEJO CONTRATISTAS</option>
+          <option value="CG-09">9.9 INGENIERÍA/DISEÑO</option>
+          <option value="CG-10">9.10 OPERACIONES/MANTENCIÓN</option>
+          <option value="CG-11">9.11 SALUD OCUPACIONAL</option>
+          <option value="CG-12">9.12 ERGONOMÍA</option>
+          <option value="CG-13">9.13 RECURSOS HUMANOS</option>
+          <option value="CG-14">9.14 MEDIOAMBIENTE</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label><i class="fas fa-list"></i> Subgrupo 2</label>
+        <select id="subgrupocg2">
+          <option value="">-- Seleccione subgrupo --</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 8: FIRMAS -->
+  <div class="card">
+    <div class="card-title">
+      <span class="num">8</span>
+      <i class="fas fa-signature"></i>
+      Firmas
+    </div>
+    <div class="select-grid-2">
+      <div>
+        <div class="firma-label">
+          <i class="fas fa-user-pen"></i> Firma del Investigador
+        </div>
+        <div class="signature-container">
+          <canvas id="signature1" class="signature-canvas"></canvas>
+        </div>
+        <button class="btn btn-limpiar" style="margin-top:10px;" onclick="limpiarFirma(1)">
+          <i class="fas fa-eraser"></i> Limpiar Firma
+        </button>
+      </div>
+      <div>
+        <div class="firma-label">
+          <i class="fas fa-user-check"></i> Firma del Supervisor
+        </div>
+        <div class="signature-container">
+          <canvas id="signature2" class="signature-canvas"></canvas>
+        </div>
+        <button class="btn btn-limpiar" style="margin-top:10px;" onclick="limpiarFirma(2)">
+          <i class="fas fa-eraser"></i> Limpiar Firma
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTONES -->
+  <div class="action-buttons">
+    <button class="btn btn-pdf" onclick="generarPDF()" id="btnPDF">
+      <i class="fas fa-file-pdf"></i> Generar Reporte SCAT
+    </button>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer-card">
+    <span><i class="fas fa-envelope"></i> Soporte@prosering.com</span>
+    <span class="separator">·</span>
+    <span><i class="fas fa-code-branch"></i> SCAT v2.0</span>
+  </div>
+
+</div>
+
+<script>
+  /* ============================================
+     DEFINICIÓN DE CHECKBOXES
+     ============================================ */
+  const PARTES_CUERPO = [
+    "1.1 Cabeza", "1.2 Ojo", "1.3 Nariz", "1.4 Diente(s)", "1.5 Mandíbula",
+    "1.6 Cara", "1.7 Oído", "1.8 Cuello", "1.9 Hombro", "1.10 Brazo superior",
+    "1.11 Codo", "1.12 Antebrazo", "1.13 Muñeca", "1.14 Mano", "1.15 Dedo",
+    "1.16 Pecho", "1.17 Abdomen", "1.18 Columna Dorsal", "1.19 Columna Lumbar",
+    "1.20 Caderas", "1.21 Nalgas", "1.22 Ingle", "1.23 Pierna superior",
+    "1.24 Rodilla", "1.25 Pierna Inferior", "1.26 Tobillo", "1.27 Pié",
+    "1.28 Dedo del Pié", "1.29 Interno", "1.30 Sistémico"
+  ];
+
+  const NATURALEZA_LESION = [
+    "2.1 Abrasión", "2.2 Alergia", "2.3 Amputación", "2.4 Mordida/Picada",
+    "2.5 Moretón/Contusión", "2.6 Quemadura (química)", "2.7 Quemadura (eléctrica)",
+    "2.8 Quemadura (calor)", "2.9 Conmoción Cerebral", "2.10 Corte/Esquina",
+    "2.11 Aplastamiento", "2.12 Corte/Laceración", "2.13 Dislocación",
+    "2.14 Agotamiento", "2.15 Intoxicación por Alimento", "2.16 Cuerpo Extraño [incrustado]",
+    "2.17 Cuerpo Extraño [liberado]", "2.18 Fractura", "2.19 Dolor de Cabeza",
+    "2.20 Hernia", "2.21 Hipotermia", "2.22 Inhalación", "2.23 Irritación",
+    "2.24 Obstrucción", "2.25 Envenenamiento", "2.26 Pinchazo", "2.27 Shock",
+    "2.28 Esguince/Tensión", "2.29 Asfixia", "2.30 Herida"
+  ];
+
+  /* ============================================
+     GENERAR CHECKBOXES DINÁMICAMENTE
+     ============================================ */
+  function generarCheckboxes(contenedorId, opciones, prefijo) {
+    const contenedor = document.getElementById(contenedorId);
+    contenedor.innerHTML = '';
+
+    opciones.forEach((texto, idx) => {
+      const id = `${prefijo}${idx + 1}`;
+      const div = document.createElement('div');
+      div.className = 'checkbox-item';
+      div.innerHTML = `
+        <input type="checkbox" id="${id}" value="${texto.replace(/^\d+\.\d+\s/, '')}">
+        <label for="${id}">${texto}</label>
+      `;
+      contenedor.appendChild(div);
+
+      // Toggle clase "checked"
+      const checkbox = div.querySelector('input');
+      checkbox.addEventListener('change', () => {
+        div.classList.toggle('checked', checkbox.checked);
+      });
+    });
+  }
+
+  /* ============================================
+     SUBGRUPOS
+     ============================================ */
+  const subgrupofpData = {
+    "FP-01": ["7.1.1 Altura/peso/fuerza inadecuados","7.1.2 Rango movimiento limitado","7.1.3 Capacidad posición limitada","7.1.4 Incapacidad permanente","7.1.5 Incapacidad temporal","7.1.6 Alergias","7.1.7 Sensibilidad sensorial","7.1.8 Visión deficiente","7.1.9 Audición deficiente","7.1.10 Otros sentidos","7.1.11 Incapacidad respiratoria"],
+    "FP-02": ["7.2.1 Discapacidad permanente","7.2.2 Discapacidad temporal","7.2.3 Miedos/Fobias","7.2.4 Alteración emocional","7.2.5 Enfermedad mental","7.2.6 Nivel inteligencia","7.2.7 Incapacidad comprensión"],
+    "FP-03": ["7.3.1 Lesión/enfermedad","7.3.2 Fatiga por carga","7.3.3 Fatiga por descanso","7.3.4 Sobrecarga sensorial","7.3.5 Exposición peligros"],
+    "FP-04": ["7.4.1 Sobrecarga emocional","7.4.2 Fatiga por presión","7.4.3 Exigencia decisiones","7.4.4 Monotonía","7.4.5 Exigencia concentración"],
+    "FP-05": ["7.5.1 Falta experiencia","7.5.2 Orientación inadecuada","7.5.3 Capacitación insuficiente"],
+    "FP-06": ["7.6.1 Instrucción insuficiente","7.6.2 Desempeño inadecuado","7.6.3 Práctica infrecuente"],
+    "FP-07": ["7.7.1 Premio práctica impropia","7.7.2 Castigo práctica correcta","7.7.3 Falta incentivos","7.7.4 Frustración excesiva"]
+  };
+
+  const subgrupoData = {
+    "FT-01": ["8.1.1 Informe poco claro","8.1.2 Responsabilidad confusa","8.1.3 Delegación inapropiada","8.1.4 Políticas inapropiadas","8.1.5 Planificación inadecuada","8.1.6 Instrucciones incorrectas"],
+    "FT-02": ["8.2.1 Evaluación inadecuada","8.2.2 Ergonomía inadecuada","8.2.3 Estándares inadecuados","8.2.4 Monitoreo inadecuado"],
+    "FT-03": ["8.3.1 Especificaciones incorrectas","8.3.2 Investigación incorrecta","8.3.3 Inspección inadecuada"],
+    "FT-04": ["8.4.1 Prevención inadecuada","8.4.2 Restauración inadecuada","8.4.3 Reparación inadecuada"],
+    "FT-05": ["8.5.1 Evaluación necesidades","8.5.2 Factores ergonómicos","8.5.3 Especificaciones inadecuadas"],
+    "FT-06": ["8.6.1 Desarrollo inadecuado","8.6.2 Comunicación inadecuada","8.6.3 Mantención inadecuada"],
+    "FT-07": ["8.7.1 Planificación uso","8.7.2 Inspección inadecuada","8.7.3 Mantención inadecuada"],
+    "FT-08": ["8.8.1 Tolerado por supervisión","8.8.2 No tolerado"]
+  };
+
+  const subgrupocgData = {
+    "CG-01": ["9.1.1 Necesidades capacitación","9.1.2 Materiales desarrollados","9.1.3 Capacitación nuevos","9.1.4 Registros"],
+    "CG-02": ["9.2.1 Sistema establecido","9.2.2 Roles definidos","9.2.3 Evaluaciones regulares"],
+    "CG-03": ["9.3.1 Riesgos identificados","9.3.2 Riesgos analizados","9.3.3 Controles identificados"],
+    "CG-04": ["9.4.1 Comunicación general","9.4.2 Reuniones grupo","9.4.3 Efectividad"],
+    "CG-05": ["9.5.1 Inspección planeada","9.5.2 Inspección lugar","9.5.3 Seguimiento"],
+    "CG-06": ["9.6.1 Roles establecidos","9.6.2 Planes escritos","9.6.3 Equipos"],
+    "CG-07": ["9.7.1 Desarrollados para tareas","9.7.2 Disponibles","9.7.3 Revisados"],
+    "CG-08": ["9.8.1 Políticas escritas","9.8.2 Selección contratistas","9.8.3 Capacitación"],
+    "CG-09": ["9.9.1 Normas seguidas","9.9.2 Peligros identificados","9.9.3 Revisión proyectos"],
+    "CG-10": ["9.10.1 Mantención preventiva","9.10.2 Partes críticas","9.10.3 Sistema pedidos"],
+    "CG-11": ["9.11.1 Evaluación peligros","9.11.2 Monitoreo","9.11.3 Supervisión médica"],
+    "CG-12": ["9.12.1 Diseño ergonómico","9.12.2 Revisiones","9.12.3 Capacitación"],
+    "CG-13": ["9.13.1 Requisitos evaluados","9.13.2 Examen precolocación","9.13.3 Inducción"],
+    "CG-14": ["9.14.1 Controles derrames"]
+  };
+
+  function cargarSubgrupoDesdeData(data, origenSelect, destinoSelectId) {
+    const valor = origenSelect.value;
+    const destino = document.getElementById(destinoSelectId);
+    destino.innerHTML = '<option value="">-- Seleccione subgrupo --</option>';
+
+    if (data[valor]) {
+      data[valor].forEach(txt => {
+        const opt = document.createElement("option");
+        opt.value = txt;
+        opt.textContent = txt;
+        destino.appendChild(opt);
+      });
+    }
+  }
+
+  /* ============================================
+     FIRMAS
+     ============================================ */
+  let signaturePad1, signaturePad2;
+
+  function initSignatures() {
+    const canvas1 = document.getElementById('signature1');
+    const canvas2 = document.getElementById('signature2');
+
+    function resizeCanvas(canvas) {
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * ratio;
+      canvas.height = rect.height * ratio;
+      canvas.getContext("2d").scale(ratio, ratio);
+    }
+
+    resizeCanvas(canvas1);
+    resizeCanvas(canvas2);
+
+    signaturePad1 = new SignaturePad(canvas1, {
+      backgroundColor: 'rgb(255, 255, 255)',
+      penColor: 'rgb(0, 0, 0)'
+    });
+
+    signaturePad2 = new SignaturePad(canvas2, {
+      backgroundColor: 'rgb(255, 255, 255)',
+      penColor: 'rgb(0, 0, 0)'
+    });
+  }
+
+  function limpiarFirma(num) {
+    if (num === 1 && signaturePad1) signaturePad1.clear();
+    if (num === 2 && signaturePad2) signaturePad2.clear();
+  }
+
+  /* ============================================
+     GENERAR PDF (misma lógica)
+     ============================================ */
+  async function generarPDF() {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'pt', 'a4');
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 50;
+    let yPos = 50;
+    let pageNumber = 1;
+
+    function checkSpace(needed) {
+      if (yPos + needed > pageHeight - 50) {
+        pdf.addPage();
+        pageNumber++;
+        yPos = 50;
+        pdf.setFontSize(8);
+        pdf.setTextColor(150, 150, 150);
+        pdf.text(`Página ${pageNumber}`, pageWidth - 60, pageHeight - 30);
+        return true;
+      }
+      return false;
+    }
+
+    // Encabezado
+    pdf.setFillColor(30, 43, 60);
+    pdf.rect(0, 0, pageWidth, 60, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(24);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('ANEXO 2 · SCAT', margin, 38);
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Basic Root Cause Analysis Guide', margin, 52);
+    pdf.setFontSize(9);
+    pdf.text(`Generado: ${new Date().toLocaleString()}`, pageWidth - 140, 40);
+    yPos = 80;
+
+    // Título
+    checkSpace(40);
+    pdf.setTextColor(30, 43, 60);
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('INFORME DE ANÁLISIS CAUSA RAÍZ BÁSICO', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 20;
+    pdf.setDrawColor(200, 200, 200);
+    pdf.line(margin, yPos, pageWidth - margin, yPos);
+    yPos += 20;
+
+    // Función helper para header de sección
+    function seccionHeader(titulo) {
+      checkSpace(40);
+      pdf.setFillColor(44, 62, 80);
+      pdf.rect(margin, yPos - 15, pageWidth - (2 * margin), 25, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(titulo, margin + 10, yPos);
+      yPos += 25;
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+    }
+
+    // Info del reporte
+    seccionHeader('INFORMACIÓN DEL REPORTE');
+    const fecha = document.getElementById('fechaReporte').value || 'No especificada';
+    const area = document.getElementById('area').value || 'No especificada';
+    const supervisor = document.getElementById('supervisor').value || 'No especificado';
+    const unidad = document.getElementById('unidadMinera').value || 'No especificada';
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Fecha:', margin, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(fecha, margin + 55, yPos);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Área:', margin + 220, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(area, margin + 270, yPos);
+    yPos += 18;
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Supervisor:', margin, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(supervisor, margin + 80, yPos);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Unidad:', margin + 220, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(unidad, margin + 290, yPos);
+    yPos += 25;
+
+    // Partes del cuerpo
+    seccionHeader('1. PARTES DEL CUERPO AFECTADAS');
+    const partes = [];
+    document.querySelectorAll('#gridPartes input[type="checkbox"]:checked').forEach(chk => {
+      partes.push(chk.value);
+    });
+    if (partes.length) {
+      const lineas = pdf.splitTextToSize(partes.join(', '), pageWidth - (2 * margin) - 20);
+      checkSpace(lineas.length * 14 + 10);
+      pdf.text(lineas, margin + 5, yPos);
+      yPos += lineas.length * 14 + 10;
+    } else {
+      pdf.text('Ninguna parte seleccionada', margin + 5, yPos);
+      yPos += 18;
+    }
+
+    // Naturaleza
+    seccionHeader('2. NATURALEZA DE LA LESIÓN');
+    const naturaleza = [];
+    document.querySelectorAll('#gridNaturaleza input[type="checkbox"]:checked').forEach(chk => {
+      naturaleza.push(chk.value);
+    });
+    if (naturaleza.length) {
+      const lineas = pdf.splitTextToSize(naturaleza.join(', '), pageWidth - (2 * margin) - 20);
+      checkSpace(lineas.length * 14 + 10);
+      pdf.text(lineas, margin + 5, yPos);
+      yPos += lineas.length * 14 + 10;
+    } else {
+      pdf.text('Ninguna naturaleza seleccionada', margin + 5, yPos);
+      yPos += 18;
+    }
+
+    // Contacto y mecanismo
+    seccionHeader('3. CONTACTO Y MECANISMO');
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Agencia:', margin + 5, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(document.getElementById('agencia').value || 'No seleccionada', margin + 70, yPos);
+    yPos += 16;
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Mecanismo:', margin + 5, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(document.getElementById('mecanismo').value || 'No seleccionado', margin + 80, yPos);
+    yPos += 22;
+
+    // Causas inmediatas
+    seccionHeader('4. CAUSAS INMEDIATAS');
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Práctica:', margin + 5, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(document.getElementById('practica').value || 'No seleccionada', margin + 80, yPos);
+    yPos += 16;
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Condición:', margin + 5, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(document.getElementById('condicion').value || 'No seleccionada', margin + 80, yPos);
+    yPos += 22;
+
+    // Helper para opciones dobles
+    function dibujarOpciones(selectId, subSelectId, titulo) {
+      seccionHeader(titulo);
+      const select = document.getElementById(selectId);
+      const sub = document.getElementById(subSelectId);
+      if (select.value) {
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Opción 1:', margin + 5, yPos);
+        pdf.setFont('helvetica', 'normal');
+        const texto1 = select.options[select.selectedIndex]?.text || '';
+        const lineas1 = pdf.splitTextToSize(texto1, pageWidth - (2 * margin) - 80);
+        pdf.text(lineas1, margin + 70, yPos);
+        yPos += lineas1.length * 14;
+        if (sub.value) {
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('Subgrupo 1:', margin + 5, yPos);
+          pdf.setFont('helvetica', 'normal');
+          const lineasS1 = pdf.splitTextToSize(sub.value, pageWidth - (2 * margin) - 90);
+          pdf.text(lineasS1, margin + 80, yPos);
+          yPos += lineasS1.length * 14;
+        }
+      } else {
+        pdf.text('Sin selección', margin + 5, yPos);
+        yPos += 14;
+      }
+      yPos += 5;
+    }
+
+    // Factor Personal
+    seccionHeader('5. FACTOR PERSONAL');
+    [['opcionfp1', 'subgrupofp1'], ['opcionfp2', 'subgrupofp2']].forEach(([idO, idS], i) => {
+      const select = document.getElementById(idO);
+      const sub = document.getElementById(idS);
+      if (select.value) {
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`Opción ${i + 1}:`, margin + 5, yPos);
+        pdf.setFont('helvetica', 'normal');
+        const texto = select.options[select.selectedIndex]?.text || '';
+        const lineas = pdf.splitTextToSize(texto, pageWidth - (2 * margin) - 80);
+        pdf.text(lineas, margin + 70, yPos);
+        yPos += lineas.length * 14;
+        if (sub.value) {
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(`Subgrupo ${i + 1}:`, margin + 5, yPos);
+          pdf.setFont('helvetica', 'normal');
+          const lineasS = pdf.splitTextToSize(sub.value, pageWidth - (2 * margin) - 90);
+          pdf.text(lineasS, margin + 80, yPos);
+          yPos += lineasS.length * 14;
+        }
+        yPos += 3;
+      }
+    });
+
+    // Factor Trabajo
+    seccionHeader('6. FACTOR DE TRABAJO');
+    [['opcion1', 'subgrupo1'], ['opcion2', 'subgrupo2']].forEach(([idO, idS], i) => {
+      const select = document.getElementById(idO);
+      const sub = document.getElementById(idS);
+      if (select.value) {
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`Opción ${i + 1}:`, margin + 5, yPos);
+        pdf.setFont('helvetica', 'normal');
+        const texto = select.options[select.selectedIndex]?.text || '';
+        const lineas = pdf.splitTextToSize(texto, pageWidth - (2 * margin) - 80);
+        pdf.text(lineas, margin + 70, yPos);
+        yPos += lineas.length * 14;
+        if (sub.value) {
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(`Subgrupo ${i + 1}:`, margin + 5, yPos);
+          pdf.setFont('helvetica', 'normal');
+          const lineasS = pdf.splitTextToSize(sub.value, pageWidth - (2 * margin) - 90);
+          pdf.text(lineasS, margin + 80, yPos);
+          yPos += lineasS.length * 14;
+        }
+        yPos += 3;
+      }
+    });
+
+    // Control Gerencia
+    seccionHeader('7. CONTROL DE GERENCIA');
+    [['opcioncg1', 'subgrupocg1'], ['opcioncg2', 'subgrupocg2']].forEach(([idO, idS], i) => {
+      const select = document.getElementById(idO);
+      const sub = document.getElementById(idS);
+      if (select.value) {
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`Opción ${i + 1}:`, margin + 5, yPos);
+        pdf.setFont('helvetica', 'normal');
+        const texto = select.options[select.selectedIndex]?.text || '';
+        const lineas = pdf.splitTextToSize(texto, pageWidth - (2 * margin) - 80);
+        pdf.text(lineas, margin + 70, yPos);
+        yPos += lineas.length * 14;
+        if (sub.value) {
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(`Subgrupo ${i + 1}:`, margin + 5, yPos);
+          pdf.setFont('helvetica', 'normal');
+          const lineasS = pdf.splitTextToSize(sub.value, pageWidth - (2 * margin) - 90);
+          pdf.text(lineasS, margin + 80, yPos);
+          yPos += lineasS.length * 14;
+        }
+        yPos += 3;
+      }
+    });
+
+    // Firmas
+    checkSpace(140);
+    pdf.setFillColor(44, 62, 80);
+    pdf.rect(margin, yPos - 15, pageWidth - (2 * margin), 25, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('8. FIRMAS', margin + 10, yPos);
+    yPos += 25;
+    pdf.setTextColor(0, 0, 0);
+
+    if (signaturePad1 && !signaturePad1.isEmpty()) {
+      const canvas1 = document.getElementById('signature1');
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(10);
+      pdf.text('Firma del Investigador:', margin, yPos);
+      yPos += 10;
+      pdf.addImage(canvas1.toDataURL('image/png'), 'PNG', margin, yPos, 180, 50);
+      yPos += 60;
+    }
+
+    if (signaturePad2 && !signaturePad2.isEmpty()) {
+      checkSpace(80);
+      const canvas2 = document.getElementById('signature2');
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Firma del Supervisor:', margin, yPos);
+      yPos += 10;
+      pdf.addImage(canvas2.toDataURL('image/png'), 'PNG', margin, yPos, 180, 50);
+      yPos += 60;
+    }
+
+    pdf.save(`SCAT_${new Date().toISOString().slice(0, 10)}.pdf`);
+  }
+
+  /* ============================================
+     INICIALIZACIÓN
+     ============================================ */
+  document.addEventListener('DOMContentLoaded', function() {
+    // Generar checkboxes
+    generarCheckboxes('gridPartes', PARTES_CUERPO, 'i');
+    generarCheckboxes('gridNaturaleza', NATURALEZA_LESION, 'i');
+    // Ajustar numeración después del primero
+    document.querySelectorAll('#gridNaturaleza input[type="checkbox"]').forEach((chk, i) => {
+      chk.id = `i${i + 31}`;
+      const label = chk.nextElementSibling;
+      if (label) label.setAttribute('for', `i${i + 31}`);
+    });
+
+    // Inicializar firmas
+    initSignatures();
+
+    // Listeners subgrupos
+    document.getElementById("opcionfp1").addEventListener("change", function() {
+      cargarSubgrupoDesdeData(subgrupofpData, this, "subgrupofp1");
+    });
+    document.getElementById("opcionfp2").addEventListener("change", function() {
+      cargarSubgrupoDesdeData(subgrupofpData, this, "subgrupofp2");
+    });
+    document.getElementById("opcion1").addEventListener("change", function() {
+      cargarSubgrupoDesdeData(subgrupoData, this, "subgrupo1");
+    });
+    document.getElementById("opcion2").addEventListener("change", function() {
+      cargarSubgrupoDesdeData(subgrupoData, this, "subgrupo2");
+    });
+    document.getElementById("opcioncg1").addEventListener("change", function() {
+      cargarSubgrupoDesdeData(subgrupocgData, this, "subgrupocg1");
+    });
+    document.getElementById("opcioncg2").addEventListener("change", function() {
+      cargarSubgrupoDesdeData(subgrupocgData, this, "subgrupocg2");
+    });
+  });
+</script>
+
+</body>
+</html>
